@@ -1,0 +1,20 @@
+name: Chaos Engineering Deployment
+on: [push]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Kubernetes
+        uses: azure/setup-kubectl@v3
+
+      - name: Build & Push Hello World App
+        run: |
+          docker build -t my-hello-world-app:latest hello-world-app/
+          docker tag my-hello-world-app:latest my-docker-repo/hello-world-app:latest
+          docker push my-docker-repo/hello-world-app:latest
+
+      - name: Deploy Hello World App
+        run: kubectl apply -f helm/templates/hello-world-deployment.yaml

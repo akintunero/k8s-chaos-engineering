@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: hello-world-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: your-dockerhub-username/flask-app:v1  # Use your custom Flask image
+        command: ["python"]
+        args: ["-m", "flask", "run"]
+        ports:
+        - containerPort: 8080  # Match with app.py
+        env:
+        - name: FLASK_APP
+          value: "app.py"
+        - name: FLASK_RUN_HOST
+          value: "0.0.0.0"
+        - name: FLASK_RUN_PORT
+          value: "8080"  # Match app.py
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+  namespace: hello-world-app
+spec:
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080  # Match app.py
