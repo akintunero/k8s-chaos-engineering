@@ -10,11 +10,14 @@ jobs:
       - name: Setup Kubernetes
         uses: azure/setup-kubectl@v3
 
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "akintunero" --password-stdin
+
       - name: Build & Push Hello World App
         run: |
-          docker build -t my-hello-world-app:latest hello-world-app/
-          docker tag my-hello-world-app:latest my-docker-repo/hello-world-app:latest
-          docker push my-docker-repo/hello-world-app:latest
+          docker build -t hello-world-app:latest hello-world-app/
+          docker tag hello-world-app:latest akintunero/hello-world-app:latest
+          docker push akintunero/hello-world-app:latest
 
       - name: Deploy Hello World App
         run: kubectl apply -f helm/templates/hello-world-deployment.yaml
