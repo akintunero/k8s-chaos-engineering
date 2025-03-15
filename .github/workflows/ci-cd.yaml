@@ -10,6 +10,11 @@ jobs:
       - name: Setup Kubernetes
         uses: azure/setup-kubectl@v3
 
+      - name: Configure Kubeconfig
+        run: |
+          echo "${{ secrets.KUBECONFIG }}" | base64 --decode > kubeconfig.yaml
+          export KUBECONFIG=$PWD/kubeconfig.yaml
+
       - name: Log in to Docker Hub
         run: echo "${{ secrets.DOCKER_HUB_TOKEN }}" | docker login -u "akintunero" --password-stdin
 
