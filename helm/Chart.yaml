@@ -1,0 +1,6 @@
+apiVersion: v2
+name: chaos-demo
+description: Helm chart for Kubernetes Chaos Engineering Demo
+version: 0.1.0
+appVersion: "1.0"
+type: application

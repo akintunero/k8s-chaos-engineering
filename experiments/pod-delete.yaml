@@ -2,21 +2,24 @@ apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine
 metadata:
   name: pod-delete
-  namespace: hello-world-app
 spec:
-  appinfo:
-    appns: hello-world-app
-    applabel: "app=flask-app"
-    appkind: deployment
-  annotationCheck: "false"
   engineState: "active"
+  annotationCheck: "false"
+  appinfo:
+    appns: "default"
+    appkind: "deployment"
+    applabel: "app=flask"
   chaosServiceAccount: litmus-admin
   experiments:
-    - name: pod-delete
-      spec:
-        components:
-          env:
-            - name: TOTAL_CHAOS_DURATION
-              value: "30"
-            - name: CHAOS_INTERVAL
-              value: "10"
+  - name: pod-delete
+    spec:
+      components:
+        env:
+        - name: TARGET_CONTAINER
+          value: "flask-container"
+        - name: TOTAL_CHAOS_DURATION
+          value: "60"
+        - name: CHAOS_INTERVAL
+          value: "10"
+        - name: FORCE
+          value: "true"
