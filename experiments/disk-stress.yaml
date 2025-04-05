@@ -1,0 +1,25 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: disk-stress
+spec:
+  engineState: "active"
+  annotationCheck: "false"
+  appinfo:
+    appns: "{{ .Values.namespace | default \"default\" }}"
+    appkind: "deployment"
+    applabel: "{{ .Values.appLabel | default \"app=flask\" }}"
+  chaosServiceAccount: litmus-admin
+  experiments:
+  - name: disk-stress
+    spec:
+      components:
+        env:
+        - name: TARGET_CONTAINER
+          value: "{{ .Values.targetContainer | default \"flask-container\" }}"
+        - name: DISK_FILL_PERCENTAGE
+          value: "80"
+        - name: TOTAL_CHAOS_DURATION
+          value: "60"
+        - name: CHAOS_INTERVAL
+          value: "10"
