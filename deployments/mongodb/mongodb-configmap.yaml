@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: chaos-litmus-admin-config
+  namespace: litmus
+data:
+  DB_SERVER: mongodb://chaos-mongodb:27017/admin
+  SKIP_SSL_VERIFY: "false"
+  VERSION: 3.16.0 

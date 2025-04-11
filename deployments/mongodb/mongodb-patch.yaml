@@ -1,0 +1,37 @@
+spec:
+  template:
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:4.4
+        args:
+        - --auth
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: root
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: chaos-mongodb
+              key: mongodb-root-password
+        volumeMounts:
+        - mountPath: /data/db
+          name: datadir
+        livenessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 30
+          periodSeconds: 20
+          timeoutSeconds: 20
+        readinessProbe:
+          exec:
+            command:
+            - mongosh
+            - --eval
+            - "db.adminCommand('ping')"
+          initialDelaySeconds: 5
+          periodSeconds: 10
+          timeoutSeconds: 20 
