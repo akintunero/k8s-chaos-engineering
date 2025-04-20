@@ -1,0 +1,12 @@
+mongodb:
+  enabled: false
+
+portal:
+  server:
+    waitForMongodb:
+      mongoHost: "chaos-mongodb"
+      mongoPort: "27017"
+  authServer:
+    waitForMongodb:
+      mongoHost: "chaos-mongodb"
+      mongoPort: "27017" 
