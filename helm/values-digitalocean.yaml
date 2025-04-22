@@ -1,0 +1,96 @@
+# Digital Ocean specific configuration
+global:
+  storageClass: do-block-storage
+  domain: your-domain.com  # Replace with your actual domain
+
+# MongoDB configuration
+mongodb:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: do-block-storage
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# LitmusChaos configuration
+litmus:
+  enabled: true
+  persistence:
+    enabled: true
+    size: 8Gi
+    storageClass: do-block-storage
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "250m"
+    limits:
+      memory: "1Gi"
+      cpu: "500m"
+
+# Flask application configuration
+flask:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+  service:
+    type: LoadBalancer
+    port: 5000
+
+# Nginx configuration
+nginx:
+  enabled: true
+  replicaCount: 2
+  resources:
+    requests:
+      memory: "256Mi"
+      cpu: "100m"
+    limits:
+      memory: "512Mi"
+      cpu: "200m"
+  service:
+    type: LoadBalancer
+    port: 80
+
+# Monitoring configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 8Gi
+      storageClass: do-block-storage
+  grafana:
+    enabled: true
+    persistence:
+      enabled: true
+      size: 4Gi
+      storageClass: do-block-storage
+
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 3000
+  fsGroup: 2000
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  MAX_DELAY_SECONDS: "3"
+  ERROR_RATE: "0.2"
+  DEBUG: "false"
