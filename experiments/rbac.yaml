@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: litmus-admin
-  namespace: default
+  namespace: hello-world-app
   labels:
     name: litmus-admin
 
@@ -32,4 +32,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: litmus-admin
-  namespace: default
+  namespace: hello-world-app

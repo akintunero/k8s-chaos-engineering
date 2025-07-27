@@ -1,0 +1,81 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: PrometheusRule
+metadata:
+  name: chaos-alerts
+  namespace: monitoring
+  labels:
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: chaos-engineering
+    rules:
+    - alert: ChaosExperimentFailed
+      expr: litmuschaos_experiment_status == 0
+      for: 1m
+      labels:
+        severity: critical
+        category: chaos
+      annotations:
+        summary: "Chaos experiment {{ $labels.experiment_name }} failed"
+        description: "Chaos experiment {{ $labels.experiment_name }} in namespace {{ $labels.namespace }} has failed"
+    
+    - alert: ApplicationPodDown
+      expr: kube_pod_status_phase{namespace="hello-world-app", phase!="Running"} > 0
+      for: 2m
+      labels:
+        severity: warning
+        category: application
+      annotations:
+        summary: "Application pod {{ $labels.pod }} is down"
+        description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is not running"
+    
+    - alert: HighCPUUsage
+      expr: rate(container_cpu_usage_seconds_total{namespace="hello-world-app"}[5m]) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        category: resource
+      annotations:
+        summary: "High CPU usage detected on {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} is using more than 80% CPU"
+    
+    - alert: HighMemoryUsage
+      expr: (container_memory_usage_bytes{namespace="hello-world-app"} / container_spec_memory_limit_bytes{namespace="hello-world-app"}) > 0.8
+      for: 5m
+      labels:
+        severity: warning
+        category: resource
+      annotations:
+        summary: "High memory usage detected on {{ $labels.pod }}"
+        description: "Pod {{ $labels.pod }} is using more than 80% memory"
+    
+    - alert: NetworkLatencyHigh
+      expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{namespace="hello-world-app"}[5m])) > 2
+      for: 3m
+      labels:
+        severity: warning
+        category: network
+      annotations:
+        summary: "High network latency detected"
+        description: "95th percentile latency is above 2 seconds"
+    
+    - alert: DiskSpaceLow
+      expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.2
+      for: 5m
+      labels:
+        severity: critical
+        category: storage
+      annotations:
+        summary: "Low disk space on {{ $labels.instance }}"
+        description: "Disk usage is above 80% on {{ $labels.instance }}"
+    
+    - alert: ChaosExperimentRunning
+      expr: litmuschaos_experiment_status == 1
+      for: 0m
+      labels:
+        severity: info
+        category: chaos
+      annotations:
+        summary: "Chaos experiment {{ $labels.experiment_name }} is running"
+        description: "Chaos experiment {{ $labels.experiment_name }} is currently executing" 

@@ -23,3 +23,9 @@ spec:
           value: "60"
         - name: CHAOS_INTERVAL
           value: "10"
+        - name: DISK_IO_OPERATIONS
+          value: "1000"  # IOPS
+        - name: DISK_IO_SIZE
+          value: "4"  # KB
+        - name: DISK_IO_PATTERN
+          value: "random"  # Options: random, sequential

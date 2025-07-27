@@ -1,7 +1,7 @@
 apiVersion: litmuschaos.io/v1alpha1
 kind: ChaosEngine
 metadata:
-  name: network-latency
+  name: memory-hog
   namespace: hello-world-app
 spec:
   appinfo:
@@ -12,19 +12,15 @@ spec:
   engineState: "active"
   chaosServiceAccount: litmus-admin
   experiments:
-    - name: pod-network-latency
+    - name: pod-memory-hog
       spec:
         components:
           env:
-            - name: NETWORK_LATENCY
-              value: "2000"
+            - name: MEMORY_CONSUMPTION
+              value: "500"  # MB
             - name: TOTAL_CHAOS_DURATION
-              value: "30"
+              value: "60"
             - name: CHAOS_INTERVAL
               value: "10"
-            - name: NETWORK_JITTER
-              value: "100"
-            - name: PACKET_LOSS_PERCENTAGE
-              value: "5"
-            - name: NETWORK_BANDWIDTH
-              value: "1000"  # KB/s
+            - name: NUMBER_OF_WORKERS
+              value: "4" 

@@ -1,0 +1,109 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-world-app
+  labels:
+    name: hello-world-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: hello-world-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+      - name: flask-app
+        image: nginx:1.21-alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: html-content
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: html-content
+        configMap:
+          name: app-content
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-content
+  namespace: hello-world-app
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Chaos Engineering Test App</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; background: #f5f5f5; }
+            .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+            .status { padding: 15px; margin: 15px 0; border-radius: 8px; font-weight: bold; }
+            .healthy { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .pod-info { background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e9ecef; }
+            .header { text-align: center; color: #333; }
+            .timestamp { color: #666; font-size: 0.9em; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>🎯 Chaos Engineering Test Application</h1>
+                <p>This application is ready for chaos testing!</p>
+            </div>
+            
+            <div class="status healthy">
+                ✅ Application is running and healthy
+            </div>
+            
+            <div class="pod-info">
+                <h3>Pod Information:</h3>
+                <p><strong>Pod Name:</strong> <span id="pod-name">chaos-test-pod</span></p>
+                <p><strong>Status:</strong> <span class="healthy">Running</span></p>
+                <p><strong>Timestamp:</strong> <span id="timestamp" class="timestamp">Loading...</span></p>
+            </div>
+            
+            <div class="pod-info">
+                <h3>Chaos Testing Ready:</h3>
+                <ul>
+                    <li>✅ Pod Delete Experiments</li>
+                    <li>✅ CPU Stress Testing</li>
+                    <li>✅ Memory Stress Testing</li>
+                    <li>✅ Network Latency Testing</li>
+                    <li>✅ Network Partition Testing</li>
+                    <li>✅ Disk Stress Testing</li>
+                </ul>
+            </div>
+        </div>
+        
+        <script>
+            document.getElementById('timestamp').textContent = new Date().toISOString();
+            document.getElementById('pod-name').textContent = 'chaos-test-' + Math.random().toString(36).substr(2, 9);
+        </script>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+  namespace: hello-world-app
+spec:
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP 
