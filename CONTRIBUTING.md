@@ -97,7 +97,7 @@ This project is maintained by:
 
 **Olúmáyòwá Akinkuehinmi**  
 GitHub: [@akintunero](https://github.com/akintunero)  
-📧 Email: [akintunero@protonmail.com](mailto:akintunero101@gmail.com)
+📧 Email: [akintunero101@gmail.com](mailto:akintunero101@gmail.com)
 
 ## License
 

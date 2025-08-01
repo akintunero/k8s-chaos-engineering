@@ -1,0 +1,201 @@
+# Kubernetes Chaos Engineering specific files
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Reports
+reports/
+chaos_reports/
+*.html
+*.pdf
+*.csv
+*.xml
+
+# Configuration
+config/local.yaml
+config/production.yaml
+config/secrets.yaml
+kubeconfig
+*.kubeconfig
+
+# Data
+data/
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+backup-*.tar.gz
+
+# Security files
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Performance profiling
+*.prof
+*.stats
+profile.stats
+
+# Docker
+.dockerignore
+Dockerfile.dev
+docker-compose.override.yml
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE specific
+.vscode/
+*.swp
+*.swo
+*~
+
+# Pre-commit
+.pre-commit-config.yaml
+
+# Coverage reports
+htmlcov/
+.coverage
+coverage.xml
+
+# Test artifacts
+.pytest_cache/
+test-results/
+junit.xml
+
+# Documentation builds
+docs/_build/
+docs/build/
+
+# Local development
+local/
+dev/
+development/
+
+# Environment variables
+.env.local
+.env.development
+.env.test
+.env.production
+
+# SSL certificates
+ssl/
+certs/
+
+# Database migrations
+migrations/
+*.sql
+
+# Cache directories
+.cache/
+cache/
+
+# Node.js (if using frontend tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Compiled files
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+# Distribution
+dist/
+build/
+*.egg-info/
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Application specific
+# Chaos experiment results
+chaos_results/
+experiment_results/
+*.json.results
+
+# Kubernetes manifests (local)
+manifests/local/
+manifests/dev/
+
+# Helm charts (local)
+helm/local/
+helm/dev/
+
+# Monitoring data
+monitoring_data/
+prometheus_data/
+grafana_data/
+
+# Alert logs
+alerts.log
+notifications.log
+
+# Backup directories
+backups/
+archives/
+old_reports/
+
+# Development tools
+.editorconfig.bak
+.eslintrc.bak
+.prettierrc.bak
+
+# CI/CD
+.github/workflows/.env
+.gitlab-ci.yml.local
+
+# Local overrides
+local_requirements.txt
+local_config.py
+
+# Reports
+reports/
+*.txt
+*.html
+*.csv
+*.pdf
+
+# Logs
+*.log
+logs/
+log/ 

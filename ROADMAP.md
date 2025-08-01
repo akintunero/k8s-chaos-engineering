@@ -59,7 +59,3 @@
 ## How to Contribute
 
 We welcome contributions to any of these areas! Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
-
-## Feedback
-
-If you have suggestions for the roadmap or would like to contribute to any of these areas, please open an issue or reach out to us on our [Slack channel](https://slack.litmuschaos.io/).
