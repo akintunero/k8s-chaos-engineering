@@ -1,0 +1,34 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  workflow_dispatch:
+
+jobs:
+  test:
+    uses: ./.github/workflows/test.yml
+
+  lint:
+    uses: ./.github/workflows/lint.yml
+
+  security:
+    uses: ./.github/workflows/security.yml
+
+  # All checks must pass
+  ci-success:
+    needs: [test, lint, security]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Check all jobs passed
+        run: |
+          if [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ]; then
+            echo "One or more CI checks failed"
+            exit 1
+          fi
+          echo "All CI checks passed! ✅"
