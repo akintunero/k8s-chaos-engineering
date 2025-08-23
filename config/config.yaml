@@ -1,0 +1,50 @@
+# Kubernetes Chaos Engineering Framework Configuration
+
+# Namespaces
+namespaces:
+  app: ${APP_NAMESPACE:-hello-world-app}
+  litmus: ${LITMUS_NAMESPACE:-litmus}
+  monitoring: ${MONITORING_NAMESPACE:-monitoring}
+
+# Chaos Engineering Settings
+chaos:
+  default_timeout: ${DEFAULT_TIMEOUT:-300}  # seconds
+  retry_attempts: ${RETRY_ATTEMPTS:-3}
+  retry_delay: ${RETRY_DELAY:-1}  # seconds (base delay, uses exponential backoff)
+  check_interval: ${CHECK_INTERVAL:-5}  # seconds
+  default_experiment_duration: ${DEFAULT_EXPERIMENT_DURATION:-60}  # seconds
+  default_chaos_interval: ${DEFAULT_CHAOS_INTERVAL:-10}  # seconds
+
+# Monitoring Configuration
+monitoring:
+  enabled: ${MONITORING_ENABLED:-true}
+  prometheus_url: ${PROMETHEUS_URL:-http://prometheus:9090}
+  grafana_url: ${GRAFANA_URL:-http://grafana:3000}
+
+# Paths
+paths:
+  experiments_dir: ${EXPERIMENTS_DIR:-experiments}
+  manifests_dir: ${MANIFESTS_DIR:-manifests}
+
+# Kubernetes Configuration
+kubernetes:
+  kubeconfig: ${KUBECONFIG:-}  # Optional: path to kubeconfig file
+
+# Notification Settings
+notifications:
+  enabled: ${NOTIFICATIONS_ENABLED:-false}
+  slack:
+    webhook_url: ${SLACK_WEBHOOK_URL:-}
+  email:
+    enabled: ${EMAIL_ENABLED:-false}
+    smtp_server: ${EMAIL_SMTP_SERVER:-}
+    smtp_port: ${EMAIL_SMTP_PORT:-587}
+    from: ${EMAIL_FROM:-}
+    to: ${EMAIL_TO:-}
+    use_tls: true
+
+# Logging Configuration
+logging:
+  level: ${LOG_LEVEL:-INFO}  # DEBUG, INFO, WARNING, ERROR, CRITICAL
+  json_format: ${LOG_JSON:-false}  # Use JSON format for structured logging
+  log_file: ${LOG_FILE:-}  # Optional: path to log file
