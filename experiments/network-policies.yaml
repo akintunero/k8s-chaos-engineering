@@ -1,0 +1,76 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: chaos-engineering-network-policy
+  namespace: hello-world-app
+spec:
+  podSelector:
+    matchLabels:
+      app: flask-app
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from litmus namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: litmus
+    ports:
+    - protocol: TCP
+      port: 8080
+  # Allow ingress from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    ports:
+    - protocol: TCP
+      port: 8080
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow egress to litmus namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: litmus
+  # Allow egress to monitoring namespace
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: litmus-network-policy
+  namespace: litmus
+spec:
+  podSelector: {}
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from app namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: hello-world-app
+  egress:
+  # Allow DNS
+  - to:
+    - namespaceSelector: {}
+    ports:
+    - protocol: UDP
+      port: 53
+  # Allow egress to app namespace for chaos experiments
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: hello-world-app
