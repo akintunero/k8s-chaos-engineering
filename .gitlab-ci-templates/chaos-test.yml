@@ -1,0 +1,44 @@
+# GitLab CI template for chaos engineering tests
+# Usage: include this template in your .gitlab-ci.yml
+
+.chaos_test_template: &chaos_test_template
+  image: python:3.11
+  before_script:
+    - pip install -r scripts/requirements.txt
+    - kubectl version --client
+  variables:
+    CHAOS_NAMESPACE: "hello-world-app"
+    CHAOS_TIMEOUT: "300"
+
+chaos_test:pod_delete:
+  <<: *chaos_test_template
+  script:
+    - python scripts/chaos-runner.py run pod-delete --namespace $CHAOS_NAMESPACE
+    - sleep 30  # Wait for experiment
+    - python scripts/chaos-runner.py status pod-delete --namespace $CHAOS_NAMESPACE
+    - python scripts/chaos-runner.py stop pod-delete --namespace $CHAOS_NAMESPACE
+  only:
+    - main
+    - develop
+
+chaos_test:cpu_stress:
+  <<: *chaos_test_template
+  script:
+    - python scripts/chaos-runner.py run cpu-hog --namespace $CHAOS_NAMESPACE
+    - sleep 30
+    - python scripts/chaos-runner.py status cpu-hog --namespace $CHAOS_NAMESPACE
+    - python scripts/chaos-runner.py stop cpu-hog --namespace $CHAOS_NAMESPACE
+  only:
+    - main
+    - develop
+
+chaos_test:network_latency:
+  <<: *chaos_test_template
+  script:
+    - python scripts/chaos-runner.py run network-latency --namespace $CHAOS_NAMESPACE
+    - sleep 30
+    - python scripts/chaos-runner.py status network-latency --namespace $CHAOS_NAMESPACE
+    - python scripts/chaos-runner.py stop network-latency --namespace $CHAOS_NAMESPACE
+  only:
+    - main
+    - develop

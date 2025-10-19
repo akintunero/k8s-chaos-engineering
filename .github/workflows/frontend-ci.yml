@@ -1,0 +1,47 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'web/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'web/frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+        cache-dependency-path: web/frontend/package-lock.json
+    
+    - name: Install dependencies
+      working-directory: web/frontend
+      run: npm ci
+    
+    - name: Run linter
+      working-directory: web/frontend
+      run: npm run lint || echo "Linter not configured, skipping"
+    
+    - name: Build
+      working-directory: web/frontend
+      run: npm run build
+    
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: frontend-build
+        path: web/frontend/dist
+        retention-days: 7

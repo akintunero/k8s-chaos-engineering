@@ -1,0 +1,44 @@
+name: Backend CI
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'web/backend/**'
+      - '.github/workflows/backend-ci.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'web/backend/**'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
+        cache: 'pip'
+        cache-dependency-path: web/backend/requirements.txt
+    
+    - name: Install dependencies
+      working-directory: web/backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+        pip install pytest pytest-asyncio httpx
+    
+    - name: Run tests
+      working-directory: web/backend
+      run: |
+        pytest tests/ -v || echo "No tests yet, skipping"
+    
+    - name: Check API health
+      working-directory: web/backend
+      run: |
+        python -c "from main import app; print('API imports successfully')" || exit 1

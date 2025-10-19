@@ -1,0 +1,71 @@
+name: 'Chaos Engineering Test'
+description: 'Run chaos engineering experiments in CI/CD pipeline'
+inputs:
+  experiment:
+    description: 'Name of the chaos experiment to run'
+    required: true
+  namespace:
+    description: 'Kubernetes namespace'
+    required: false
+    default: 'hello-world-app'
+  timeout:
+    description: 'Timeout in seconds'
+    required: false
+    default: '300'
+  wait-for-recovery:
+    description: 'Wait for application recovery after experiment'
+    required: false
+    default: 'true'
+
+outputs:
+  experiment-status:
+    description: 'Status of the chaos experiment'
+  recovery-time:
+    description: 'Time taken for application recovery'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+    
+    - name: Install dependencies
+      working-directory: scripts
+      shell: bash
+      run: |
+        pip install -r requirements.txt
+    
+    - name: Run chaos experiment
+      working-directory: scripts
+      shell: bash
+      run: |
+        python chaos-runner.py run ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
+      id: run-experiment
+    
+    - name: Wait for recovery
+      if: inputs.wait-for-recovery == 'true'
+      working-directory: scripts
+      shell: bash
+      run: |
+        echo "Waiting for application recovery..."
+        # Add recovery check logic here
+        sleep 30
+    
+    - name: Check experiment status
+      working-directory: scripts
+      shell: bash
+      run: |
+        python chaos-runner.py status ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
+      id: check-status
+    
+    - name: Cleanup experiment
+      if: always()
+      working-directory: scripts
+      shell: bash
+      run: |
+        python chaos-runner.py stop ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
