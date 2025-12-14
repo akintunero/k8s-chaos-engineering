@@ -26,15 +26,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements-dev.txt
     
-    - name: Run black (code formatting check)
-      working-directory: scripts
-      run: |
-        black --check --diff .
-    
     - name: Run isort (import sorting check)
       working-directory: scripts
       run: |
         isort --check-only --diff --profile black .
+    
+    - name: Run black (code formatting check)
+      working-directory: scripts
+      run: |
+        black --check --diff .
     
     - name: Run flake8 (linting)
       working-directory: scripts
