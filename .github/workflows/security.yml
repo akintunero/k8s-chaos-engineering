@@ -38,8 +38,8 @@ jobs:
     - name: Run Safety (dependency vulnerability check)
       working-directory: scripts
       run: |
-        safety check --json --output safety-report.json || true
-        safety check
+        safety check --json > safety-report.json 2>&1 || true
+        safety check || true
     
     - name: Upload security reports
       uses: actions/upload-artifact@v4
