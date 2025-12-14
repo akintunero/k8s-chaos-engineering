@@ -11,8 +11,13 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from utils import (get_config, get_logger, run_command,
-                   validate_experiment_name, validate_namespace)
+from utils import (
+    get_config,
+    get_logger,
+    run_command,
+    validate_experiment_name,
+    validate_namespace,
+)
 
 logger = get_logger(__name__)
 config = get_config()
