@@ -7,7 +7,8 @@ Automates the setup of the chaos engineering environment
 import sys
 from pathlib import Path
 
-from utils import get_config, get_logger, run_command, wait_for_deployment, wait_for_pods
+from utils import (get_config, get_logger, run_command, wait_for_deployment,
+                   wait_for_pods)
 
 logger = get_logger(__name__)
 config = get_config()
