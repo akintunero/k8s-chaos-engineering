@@ -3,7 +3,7 @@ Kubernetes utility functions with proper error handling and retries
 """
 
 import json
-import subprocess
+import subprocess  # nosec B404 - Required for kubectl command execution
 import sys
 import time
 from typing import Any, Dict, List, Optional
@@ -29,7 +29,11 @@ class TimeoutError(Exception):
 
 
 def run_command(
-    command: str, check: bool = True, timeout: Optional[int] = None, retries: int = 3, retry_delay: int = 1
+    command: str,
+    check: bool = True,
+    timeout: Optional[int] = None,
+    retries: int = 3,
+    retry_delay: int = 1,
 ) -> Optional[str]:
     """
     Run a shell command with retry logic and proper error handling.
@@ -51,13 +55,22 @@ def run_command(
 
     for attempt in range(retries):
         try:
-            result = subprocess.run(command, shell=True, check=check, capture_output=True, text=True, timeout=timeout)
+            result = subprocess.run(  # nosec B602 - shell=True required for kubectl commands
+                command,
+                shell=True,
+                check=check,
+                capture_output=True,
+                text=True,
+                timeout=timeout,
+            )
 
             if result.returncode == 0:
                 return result.stdout.strip()
             else:
                 last_error = result.stderr
-                logger.warning(f"Command failed (attempt {attempt + 1}/{retries}): {command}")
+                logger.warning(
+                    f"Command failed (attempt {attempt + 1}/{retries}): {command}"
+                )
                 logger.debug(f"Error: {result.stderr}")
 
                 if attempt < retries - 1:
@@ -66,7 +79,9 @@ def run_command(
                     time.sleep(delay)
                 else:
                     if check:
-                        raise KubernetesError(f"Command failed after {retries} attempts: {command}\nError: {last_error}")
+                        raise KubernetesError(
+                            f"Command failed after {retries} attempts: {command}\nError: {last_error}"
+                        )
                     return None
 
         except subprocess.TimeoutExpired as e:
@@ -78,7 +93,9 @@ def run_command(
 
         except subprocess.CalledProcessError as e:
             last_error = e.stderr
-            logger.warning(f"Command failed (attempt {attempt + 1}/{retries}): {command}")
+            logger.warning(
+                f"Command failed (attempt {attempt + 1}/{retries}): {command}"
+            )
             logger.debug(f"Error: {e.stderr}")
 
             if attempt < retries - 1:
@@ -87,7 +104,9 @@ def run_command(
                 time.sleep(delay)
             else:
                 if check:
-                    raise KubernetesError(f"Command failed after {retries} attempts: {command}\nError: {last_error}")
+                    raise KubernetesError(
+                        f"Command failed after {retries} attempts: {command}\nError: {last_error}"
+                    )
                 return None
 
     return None
@@ -157,7 +176,9 @@ def wait_for_pods(
             pods = pods_data.get("items", [])
 
             if expected_count and len(pods) != expected_count:
-                logger.debug(f"Pod count mismatch: expected {expected_count}, found {len(pods)}")
+                logger.debug(
+                    f"Pod count mismatch: expected {expected_count}, found {len(pods)}"
+                )
                 time.sleep(check_interval)
                 continue
 
@@ -172,7 +193,10 @@ def wait_for_pods(
                 if phase == "Running":
                     # Check ready condition
                     for condition in conditions:
-                        if condition.get("type") == "Ready" and condition.get("status") == "True":
+                        if (
+                            condition.get("type") == "Ready"
+                            and condition.get("status") == "True"
+                        ):
                             ready_count += 1
                             break
 
@@ -201,7 +225,9 @@ def wait_for_pods(
     raise TimeoutError(error_msg)
 
 
-def wait_for_deployment(namespace: str, deployment_name: str, timeout: int = 300, check_interval: int = 5) -> bool:
+def wait_for_deployment(
+    namespace: str, deployment_name: str, timeout: int = 300, check_interval: int = 5
+) -> bool:
     """
     Wait for a deployment to be ready.
 
@@ -217,7 +243,9 @@ def wait_for_deployment(namespace: str, deployment_name: str, timeout: int = 300
     Raises:
         TimeoutError: If deployment is not ready within timeout
     """
-    logger.info(f"Waiting for deployment '{deployment_name}' in namespace '{namespace}'")
+    logger.info(
+        f"Waiting for deployment '{deployment_name}' in namespace '{namespace}'"
+    )
 
     start_time = time.time()
 
@@ -242,15 +270,22 @@ def wait_for_deployment(namespace: str, deployment_name: str, timeout: int = 300
             # Check for available condition
             available = False
             for condition in conditions:
-                if condition.get("type") == "Available" and condition.get("status") == "True":
+                if (
+                    condition.get("type") == "Available"
+                    and condition.get("status") == "True"
+                ):
                     available = True
                     break
 
             if available and ready_replicas == replicas and replicas > 0:
-                logger.info(f"✅ Deployment '{deployment_name}' is ready ({ready_replicas}/{replicas} replicas)")
+                logger.info(
+                    f"✅ Deployment '{deployment_name}' is ready ({ready_replicas}/{replicas} replicas)"
+                )
                 return True
 
-            logger.debug(f"Deployment status: {ready_replicas}/{replicas} replicas ready, waiting...")
+            logger.debug(
+                f"Deployment status: {ready_replicas}/{replicas} replicas ready, waiting..."
+            )
             time.sleep(check_interval)
 
         except json.JSONDecodeError as e:
@@ -267,7 +302,11 @@ def wait_for_deployment(namespace: str, deployment_name: str, timeout: int = 300
 
 
 def retry_with_backoff(
-    func, max_attempts: int = 3, base_delay: int = 1, max_delay: int = 60, exceptions: tuple = (Exception,)
+    func,
+    max_attempts: int = 3,
+    base_delay: int = 1,
+    max_delay: int = 60,
+    exceptions: tuple = (Exception,),
 ) -> Any:
     """
     Retry a function with exponential backoff.
@@ -294,7 +333,9 @@ def retry_with_backoff(
             last_exception = e
             if attempt < max_attempts - 1:
                 delay = min(base_delay * (2**attempt), max_delay)
-                logger.warning(f"Attempt {attempt + 1}/{max_attempts} failed: {e}. Retrying in {delay}s...")
+                logger.warning(
+                    f"Attempt {attempt + 1}/{max_attempts} failed: {e}. Retrying in {delay}s..."
+                )
                 time.sleep(delay)
             else:
                 logger.error(f"All {max_attempts} attempts failed")

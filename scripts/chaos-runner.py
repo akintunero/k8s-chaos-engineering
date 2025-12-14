@@ -87,7 +87,8 @@ def check_experiment_status(experiment_name: str, namespace: str = None):
 
     # Check ChaosEngine status
     result = run_command(
-        f"kubectl get chaosengine {experiment_name} -n {namespace} -o jsonpath='{{.status.engineStatus}}'", check=False
+        f"kubectl get chaosengine {experiment_name} -n {namespace} -o jsonpath='{{.status.engineStatus}}'",
+        check=False,
     )
     if result:
         logger.info(f"Engine Status: {result}")
@@ -130,7 +131,9 @@ def stop_experiment(experiment_name: str, namespace: str = None):
         logger.warning(f"Failed to stop experiment: {experiment_name}")
 
     # Delete the experiment
-    result = run_command(f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False)
+    result = run_command(
+        f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False
+    )
     if result:
         logger.info(f"✅ Stopped and deleted experiment: {experiment_name}")
     else:
@@ -169,7 +172,10 @@ def cleanup_experiments(namespace: str = None):
     logger.info(f"Cleaning up all chaos experiments in namespace '{namespace}'...")
 
     # Get all chaos engines
-    result = run_command(f"kubectl get chaosengine -n {namespace} -o jsonpath='{{.items[*].metadata.name}}'", check=False)
+    result = run_command(
+        f"kubectl get chaosengine -n {namespace} -o jsonpath='{{.items[*].metadata.name}}'",
+        check=False,
+    )
     if result:
         experiments = result.split()
         logger.info(f"Found {len(experiments)} experiment(s) to clean up")
@@ -190,12 +196,20 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage:")
-        print("  python chaos-runner.py list                    # List available experiments")
+        print(
+            "  python chaos-runner.py list                    # List available experiments"
+        )
         print("  python chaos-runner.py run <experiment>        # Run an experiment")
-        print("  python chaos-runner.py status <experiment>     # Check experiment status")
+        print(
+            "  python chaos-runner.py status <experiment>     # Check experiment status"
+        )
         print("  python chaos-runner.py stop <experiment>       # Stop an experiment")
-        print("  python chaos-runner.py running                 # List running experiments")
-        print("  python chaos-runner.py cleanup                 # Clean up all experiments")
+        print(
+            "  python chaos-runner.py running                 # List running experiments"
+        )
+        print(
+            "  python chaos-runner.py cleanup                 # Clean up all experiments"
+        )
         sys.exit(1)
 
     action = sys.argv[1]

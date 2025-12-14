@@ -5,7 +5,7 @@ Demonstrates the framework capabilities and tests the implementation
 """
 
 import json
-import subprocess
+import subprocess  # nosec B404 - Required for kubectl command execution
 import sys
 import time
 from datetime import datetime
@@ -14,7 +14,9 @@ from datetime import datetime
 def run_command(command, check=True):
     """Run a shell command and return the result"""
     try:
-        result = subprocess.run(command, shell=True, check=check, capture_output=True, text=True)
+        result = subprocess.run(  # nosec B602 - shell=True required for kubectl commands
+            command, shell=True, check=check, capture_output=True, text=True
+        )
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:
         print(f"Error running command: {command}")
@@ -43,7 +45,10 @@ def test_namespace_creation():
     print("\n🔍 Testing Namespace Creation...")
 
     # Create test namespace
-    result = run_command("kubectl create namespace chaos-test --dry-run=client -o yaml | kubectl apply -f -", check=False)
+    result = run_command(
+        "kubectl create namespace chaos-test --dry-run=client -o yaml | kubectl apply -f -",
+        check=False,
+    )
     if result is not None:
         print("✅ Namespace creation works")
         return True
@@ -106,7 +111,9 @@ def test_experiment_configurations():
 
     valid_count = 0
     for exp in experiments:
-        result = run_command(f"kubectl apply -f experiments/{exp} --dry-run=client", check=False)
+        result = run_command(
+            f"kubectl apply -f experiments/{exp} --dry-run=client", check=False
+        )
         if result is not None:
             print(f"✅ {exp}: Valid configuration")
             valid_count += 1
@@ -165,7 +172,10 @@ def test_monitoring_setup():
         print("✅ Monitoring namespace exists")
 
         # Check if Grafana is running
-        grafana_result = run_command("kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana", check=False)
+        grafana_result = run_command(
+            "kubectl get pods -n monitoring -l app.kubernetes.io/name=grafana",
+            check=False,
+        )
         if grafana_result and "Running" in grafana_result:
             print("✅ Grafana is running")
             return True
@@ -228,7 +238,9 @@ def main():
         status = "✅ PASS" if result else "❌ FAIL"
         print(f"{status} {test.replace('_', ' ').title()}")
 
-    print(f"\n📊 Overall: {report['summary']['passed']}/{report['summary']['total_tests']} tests passed")
+    print(
+        f"\n📊 Overall: {report['summary']['passed']}/{report['summary']['total_tests']} tests passed"
+    )
 
     if all(results.values()):
         print("\n🎉 All tests passed! The chaos engineering framework is ready!")

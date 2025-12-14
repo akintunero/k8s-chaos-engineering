@@ -89,7 +89,9 @@ class TemplateManager:
             logger.error(f"Failed to save template: {e}")
             return False
 
-    def list_templates(self, category: Optional[str] = None, phase: Optional[str] = None) -> List[ExperimentTemplate]:
+    def list_templates(
+        self, category: Optional[str] = None, phase: Optional[str] = None
+    ) -> List[ExperimentTemplate]:
         """List available templates"""
         templates = []
 
@@ -175,12 +177,24 @@ class TemplateManager:
             logger.error(f"Failed to save experiment: {e}")
             return None
 
-    def _replace_placeholders(self, data: Any, experiment_name: str, namespace: str, parameters: Dict[str, Any]) -> Any:
+    def _replace_placeholders(
+        self,
+        data: Any,
+        experiment_name: str,
+        namespace: str,
+        parameters: Dict[str, Any],
+    ) -> Any:
         """Recursively replace placeholders in YAML data"""
         if isinstance(data, dict):
-            return {k: self._replace_placeholders(v, experiment_name, namespace, parameters) for k, v in data.items()}
+            return {
+                k: self._replace_placeholders(v, experiment_name, namespace, parameters)
+                for k, v in data.items()
+            }
         elif isinstance(data, list):
-            return [self._replace_placeholders(item, experiment_name, namespace, parameters) for item in data]
+            return [
+                self._replace_placeholders(item, experiment_name, namespace, parameters)
+                for item in data
+            ]
         elif isinstance(data, str):
             # Replace placeholders
             data = data.replace("{{experiment_name}}", experiment_name)
@@ -247,7 +261,9 @@ def main():
     create_parser.add_argument("description", help="Template description")
     create_parser.add_argument("category", help="Template category")
     create_parser.add_argument("phase", help="Template phase (phase1, phase2, phase3)")
-    create_parser.add_argument("--file", required=True, help="Path to template YAML file")
+    create_parser.add_argument(
+        "--file", required=True, help="Path to template YAML file"
+    )
     create_parser.add_argument("--author", help="Template author")
     create_parser.add_argument("--tags", nargs="+", help="Template tags")
 
@@ -257,19 +273,25 @@ def main():
     list_parser.add_argument("--phase", help="Filter by phase")
 
     # Generate experiment
-    gen_parser = subparsers.add_parser("generate", help="Generate experiment from template")
+    gen_parser = subparsers.add_parser(
+        "generate", help="Generate experiment from template"
+    )
     gen_parser.add_argument("template", help="Template name")
     gen_parser.add_argument("experiment", help="Experiment name")
     gen_parser.add_argument("--namespace", help="Kubernetes namespace")
     gen_parser.add_argument("--params", help="Parameters as JSON string")
 
     # Export template
-    export_parser = subparsers.add_parser("export", help="Export template to marketplace")
+    export_parser = subparsers.add_parser(
+        "export", help="Export template to marketplace"
+    )
     export_parser.add_argument("name", help="Template name")
     export_parser.add_argument("--path", help="Export path")
 
     # Import template
-    import_parser = subparsers.add_parser("import", help="Import template from marketplace")
+    import_parser = subparsers.add_parser(
+        "import", help="Import template from marketplace"
+    )
     import_parser.add_argument("path", help="Template file path")
 
     args = parser.parse_args()
@@ -298,11 +320,16 @@ def main():
             sys.exit(0 if success else 1)
 
         elif args.command == "list":
-            templates = manager.list_templates(category=getattr(args, "category", None), phase=getattr(args, "phase", None))
+            templates = manager.list_templates(
+                category=getattr(args, "category", None),
+                phase=getattr(args, "phase", None),
+            )
             if templates:
                 logger.info("Available templates:")
                 for t in templates:
-                    logger.info(f"  - {t.name}: {t.description} ({t.category}, {t.phase})")
+                    logger.info(
+                        f"  - {t.name}: {t.description} ({t.category}, {t.phase})"
+                    )
             else:
                 logger.info("No templates found")
 
@@ -320,7 +347,9 @@ def main():
             sys.exit(0 if result else 1)
 
         elif args.command == "export":
-            success = manager.export_template(name=args.name, export_path=getattr(args, "path", None))
+            success = manager.export_template(
+                name=args.name, export_path=getattr(args, "path", None)
+            )
             sys.exit(0 if success else 1)
 
         elif args.command == "import":

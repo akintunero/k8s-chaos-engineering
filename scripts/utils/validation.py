@@ -39,7 +39,9 @@ def validate_experiment_name(name: str) -> str:
 
     # Check length
     if len(name) > K8S_NAME_MAX_LENGTH:
-        raise ValueError(f"Experiment name too long (max {K8S_NAME_MAX_LENGTH} characters)")
+        raise ValueError(
+            f"Experiment name too long (max {K8S_NAME_MAX_LENGTH} characters)"
+        )
 
     # Check format
     if not K8S_NAME_REGEX.match(name):
@@ -72,12 +74,15 @@ def validate_namespace(namespace: str) -> str:
 
     # Check length
     if len(namespace) > K8S_NAME_MAX_LENGTH:
-        raise ValueError(f"Namespace name too long (max {K8S_NAME_MAX_LENGTH} characters)")
+        raise ValueError(
+            f"Namespace name too long (max {K8S_NAME_MAX_LENGTH} characters)"
+        )
 
     # Check format
     if not K8S_NAME_REGEX.match(namespace):
         raise ValueError(
-            "Namespace must be lowercase alphanumeric characters or '-', " "and must start and end with alphanumeric character"
+            "Namespace must be lowercase alphanumeric characters or '-', "
+            "and must start and end with alphanumeric character"
         )
 
     return namespace
@@ -109,7 +114,9 @@ def sanitize_command(command: str) -> str:
 
     for pattern in dangerous_patterns:
         if re.search(pattern, command):
-            raise ValueError(f"Command contains potentially dangerous pattern: {pattern}")
+            raise ValueError(
+                f"Command contains potentially dangerous pattern: {pattern}"
+            )
 
     return command.strip()
 
@@ -119,8 +126,12 @@ class ExperimentConfig(BaseModel):
 
     name: str = Field(..., description="Experiment name")
     namespace: str = Field(..., description="Kubernetes namespace")
-    duration: int = Field(default=60, ge=1, le=3600, description="Experiment duration in seconds")
-    interval: Optional[int] = Field(default=None, ge=1, le=3600, description="Chaos interval in seconds")
+    duration: int = Field(
+        default=60, ge=1, le=3600, description="Experiment duration in seconds"
+    )
+    interval: Optional[int] = Field(
+        default=None, ge=1, le=3600, description="Chaos interval in seconds"
+    )
     timeout: int = Field(default=300, ge=1, le=7200, description="Timeout in seconds")
 
     @field_validator("name")

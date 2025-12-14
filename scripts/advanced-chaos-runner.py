@@ -32,7 +32,11 @@ class AdvancedChaosRunner:
         """List experiments by phase"""
         experiments = {
             "Phase 1 - Basic Infrastructure": ["pod-delete"],
-            "Phase 2 - Basic Chaos Experiments": ["cpu-hog", "memory-hog", "network-latency"],
+            "Phase 2 - Basic Chaos Experiments": [
+                "cpu-hog",
+                "memory-hog",
+                "network-latency",
+            ],
             "Phase 3 - Advanced Chaos Experiments": [
                 "network-partition",
                 "disk-stress",
@@ -125,7 +129,9 @@ class AdvancedChaosRunner:
             logger.warning("Could not retrieve engine status")
 
         # Check for chaos pods
-        result = run_command(f"kubectl get pods -n {self.namespace} -l job-name", check=False)
+        result = run_command(
+            f"kubectl get pods -n {self.namespace} -l job-name", check=False
+        )
         if result:
             logger.info("Chaos Pods:")
             logger.info(result)
@@ -141,13 +147,17 @@ class AdvancedChaosRunner:
         logger.info("Monitoring comprehensive workflow...")
 
         # Check all chaos engines
-        result = run_command(f"kubectl get chaosengine -n {self.namespace}", check=False)
+        result = run_command(
+            f"kubectl get chaosengine -n {self.namespace}", check=False
+        )
         if result:
             logger.info("Active Chaos Engines:")
             logger.info(result)
 
         # Check application health
-        result = run_command(f"kubectl get pods -n {self.namespace} -l app=flask-app", check=False)
+        result = run_command(
+            f"kubectl get pods -n {self.namespace} -l app=flask-app", check=False
+        )
         if result:
             logger.info("Application Pods Status:")
             logger.info(result)
@@ -184,10 +194,16 @@ class AdvancedChaosRunner:
         """Generate a report of all experiments"""
         logger.info("Generating Chaos Experiment Report")
 
-        report = {"timestamp": datetime.now().isoformat(), "namespace": self.namespace, "experiments": {}}
+        report = {
+            "timestamp": datetime.now().isoformat(),
+            "namespace": self.namespace,
+            "experiments": {},
+        }
 
         # Get all chaos engines
-        result = run_command(f"kubectl get chaosengine -n {self.namespace} -o json", check=False)
+        result = run_command(
+            f"kubectl get chaosengine -n {self.namespace} -o json", check=False
+        )
         if result:
             try:
                 engines = json.loads(result)
@@ -202,13 +218,22 @@ class AdvancedChaosRunner:
                 logger.error(f"Failed to parse chaos engines JSON: {e}")
 
         # Get application status
-        result = run_command(f"kubectl get pods -n {self.namespace} -l app=flask-app -o json", check=False)
+        result = run_command(
+            f"kubectl get pods -n {self.namespace} -l app=flask-app -o json",
+            check=False,
+        )
         if result:
             try:
                 pods = json.loads(result)
                 report["application"] = {
                     "total_pods": len(pods.get("items", [])),
-                    "ready_pods": len([p for p in pods.get("items", []) if p["status"]["phase"] == "Running"]),
+                    "ready_pods": len(
+                        [
+                            p
+                            for p in pods.get("items", [])
+                            if p["status"]["phase"] == "Running"
+                        ]
+                    ),
                 }
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse pods JSON: {e}")
@@ -227,11 +252,14 @@ class AdvancedChaosRunner:
 
     def cleanup_all_experiments(self):
         """Clean up all chaos experiments"""
-        logger.info(f"Cleaning up all chaos experiments in namespace '{self.namespace}'...")
+        logger.info(
+            f"Cleaning up all chaos experiments in namespace '{self.namespace}'..."
+        )
 
         # Get all chaos engines
         result = run_command(
-            f"kubectl get chaosengine -n {self.namespace} -o jsonpath='{{.items[*].metadata.name}}'", check=False
+            f"kubectl get chaosengine -n {self.namespace} -o jsonpath='{{.items[*].metadata.name}}'",
+            check=False,
         )
         if result:
             experiments = result.split()
@@ -244,7 +272,10 @@ class AdvancedChaosRunner:
                         f'kubectl patch chaosengine {exp} -n {self.namespace} --type=\'merge\' -p \'{{"spec":{{"engineState":"stop"}}}}\'',
                         check=False,
                     )
-                    run_command(f"kubectl delete chaosengine {exp} -n {self.namespace}", check=False)
+                    run_command(
+                        f"kubectl delete chaosengine {exp} -n {self.namespace}",
+                        check=False,
+                    )
                 except ValueError as e:
                     logger.warning(f"Skipping invalid experiment name '{exp}': {e}")
         else:
@@ -255,7 +286,17 @@ def main():
     try:
         parser = argparse.ArgumentParser(description="Advanced Chaos Experiment Runner")
         parser.add_argument(
-            "action", choices=["list", "phase2", "phase3", "workflow", "report", "cleanup", "run"], help="Action to perform"
+            "action",
+            choices=[
+                "list",
+                "phase2",
+                "phase3",
+                "workflow",
+                "report",
+                "cleanup",
+                "run",
+            ],
+            help="Action to perform",
         )
         parser.add_argument("--experiment", help="Specific experiment to run")
 

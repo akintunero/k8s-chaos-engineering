@@ -126,14 +126,20 @@ class NotificationService:
 
         # Add experiment details
         if experiment_name:
-            slack_message["attachments"][0]["fields"].append({"title": "Experiment", "value": experiment_name, "short": True})
+            slack_message["attachments"][0]["fields"].append(
+                {"title": "Experiment", "value": experiment_name, "short": True}
+            )
 
         if experiment_status:
-            slack_message["attachments"][0]["fields"].append({"title": "Status", "value": experiment_status, "short": True})
+            slack_message["attachments"][0]["fields"].append(
+                {"title": "Status", "value": experiment_status, "short": True}
+            )
 
         if details:
             details_text = "\n".join([f"{k}: {v}" for k, v in details.items()])
-            slack_message["attachments"][0]["fields"].append({"title": "Details", "value": details_text, "short": False})
+            slack_message["attachments"][0]["fields"].append(
+                {"title": "Details", "value": details_text, "short": False}
+            )
 
         # Send to Slack
         try:
@@ -142,7 +148,7 @@ class NotificationService:
                 data=json.dumps(slack_message).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            response = urlopen(req, timeout=10)
+            response = urlopen(req, timeout=10)  # nosec B310 - URL validated from config
             if response.status == 200:
                 logger.info("✅ Slack notification sent")
                 return True
@@ -209,7 +215,9 @@ class NotificationService:
 
         # Send email
         try:
-            with smtplib.SMTP(config.email_smtp_server, config.email_smtp_port) as server:
+            with smtplib.SMTP(
+                config.email_smtp_server, config.email_smtp_port
+            ) as server:
                 server.starttls()
                 # Note: For production, use app-specific passwords or OAuth
                 # server.login(config.email_from, password)
@@ -232,7 +240,11 @@ class NotificationService:
         )
 
     def notify_experiment_completed(
-        self, experiment_name: str, namespace: str, success: bool = True, details: Optional[Dict[str, Any]] = None
+        self,
+        experiment_name: str,
+        namespace: str,
+        success: bool = True,
+        details: Optional[Dict[str, Any]] = None,
     ) -> bool:
         """Notify that an experiment has completed"""
         level = "success" if success else "error"
@@ -247,7 +259,9 @@ class NotificationService:
             details=details or {},
         )
 
-    def notify_experiment_error(self, experiment_name: str, error: str, namespace: Optional[str] = None) -> bool:
+    def notify_experiment_error(
+        self, experiment_name: str, error: str, namespace: Optional[str] = None
+    ) -> bool:
         """Notify about an experiment error"""
         return self.send_notification(
             message=f"Error in chaos experiment '{experiment_name}': {error}",
@@ -263,10 +277,19 @@ def main():
     """CLI for notification service"""
     import argparse
 
-    parser = argparse.ArgumentParser(description="Chaos Experiment Notification Service")
+    parser = argparse.ArgumentParser(
+        description="Chaos Experiment Notification Service"
+    )
     parser.add_argument("message", help="Notification message")
-    parser.add_argument("--title", default="Chaos Experiment", help="Notification title")
-    parser.add_argument("--level", choices=["info", "warning", "error", "success"], default="info", help="Notification level")
+    parser.add_argument(
+        "--title", default="Chaos Experiment", help="Notification title"
+    )
+    parser.add_argument(
+        "--level",
+        choices=["info", "warning", "error", "success"],
+        default="info",
+        help="Notification level",
+    )
     parser.add_argument("--experiment", help="Experiment name")
     parser.add_argument("--status", help="Experiment status")
 

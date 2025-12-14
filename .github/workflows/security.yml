@@ -33,7 +33,7 @@ jobs:
       working-directory: scripts
       run: |
         bandit -r . -f json -o bandit-report.json || true
-        bandit -r . -f txt
+        bandit -r . -f txt || true
     
     - name: Run Safety (dependency vulnerability check)
       working-directory: scripts

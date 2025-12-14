@@ -37,7 +37,9 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_data)
 
 
-def setup_logging(level: str = "INFO", json_format: bool = False, log_file: Optional[str] = None) -> None:
+def setup_logging(
+    level: str = "INFO", json_format: bool = False, log_file: Optional[str] = None
+) -> None:
     """
     Setup logging configuration.
 
@@ -53,7 +55,10 @@ def setup_logging(level: str = "INFO", json_format: bool = False, log_file: Opti
     if json_format:
         formatter = JSONFormatter()
     else:
-        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
+        formatter = logging.Formatter(
+            "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
 
     # Setup root logger
     root_logger = logging.getLogger()

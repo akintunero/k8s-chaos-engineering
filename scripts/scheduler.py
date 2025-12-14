@@ -5,6 +5,7 @@ Manages scheduled chaos experiments using Kubernetes CronJobs
 """
 
 import sys
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -31,7 +32,11 @@ class ChaosScheduler:
         self.namespace = config.app_namespace
 
     def create_scheduled_experiment(
-        self, experiment_name: str, schedule: str, experiment_file: Optional[str] = None, namespace: Optional[str] = None
+        self,
+        experiment_name: str,
+        schedule: str,
+        experiment_file: Optional[str] = None,
+        namespace: Optional[str] = None,
     ) -> bool:
         """
         Create a scheduled chaos experiment using CronJob.
@@ -80,14 +85,19 @@ class ChaosScheduler:
 
         # Create CronJob manifest
         cronjob = self._create_cronjob_manifest(
-            experiment_name=experiment_name, schedule=schedule, experiment_yaml=experiment_yaml, namespace=namespace
+            experiment_name=experiment_name,
+            schedule=schedule,
+            experiment_yaml=experiment_yaml,
+            namespace=namespace,
         )
 
         # Apply CronJob
-        cronjob_file = Path(f"/tmp/{experiment_name}-cronjob.yaml")
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as f:
+            yaml.dump(cronjob, f)
+            cronjob_file = Path(f.name)
         try:
-            with open(cronjob_file, "w") as f:
-                yaml.dump(cronjob, f)
 
             result = run_command(f"kubectl apply -f {cronjob_file}")
             if result:
@@ -96,7 +106,9 @@ class ChaosScheduler:
                 logger.info(f"   Namespace: {namespace}")
                 return True
             else:
-                logger.error(f"Failed to create scheduled experiment: {experiment_name}")
+                logger.error(
+                    f"Failed to create scheduled experiment: {experiment_name}"
+                )
                 return False
         finally:
             if cronjob_file.exists():
@@ -112,7 +124,10 @@ class ChaosScheduler:
             logger.error(f"Validation error: {e}")
             return []
 
-        result = run_command(f"kubectl get cronjobs -n {namespace} -l app=chaos-scheduler -o json", check=False)
+        result = run_command(
+            f"kubectl get cronjobs -n {namespace} -l app=chaos-scheduler -o json",
+            check=False,
+        )
 
         if not result:
             logger.info("No scheduled experiments found")
@@ -137,7 +152,9 @@ class ChaosScheduler:
             logger.error(f"Failed to parse CronJobs: {e}")
             return []
 
-    def delete_scheduled_experiment(self, experiment_name: str, namespace: Optional[str] = None) -> bool:
+    def delete_scheduled_experiment(
+        self, experiment_name: str, namespace: Optional[str] = None
+    ) -> bool:
         """Delete a scheduled experiment"""
         namespace = namespace or self.namespace
 
@@ -149,7 +166,9 @@ class ChaosScheduler:
             return False
 
         cronjob_name = f"chaos-{experiment_name}"
-        result = run_command(f"kubectl delete cronjob {cronjob_name} -n {namespace}", check=False)
+        result = run_command(
+            f"kubectl delete cronjob {cronjob_name} -n {namespace}", check=False
+        )
 
         if result:
             logger.info(f"✅ Deleted scheduled experiment: {experiment_name}")
@@ -166,13 +185,23 @@ class ChaosScheduler:
 
         # Basic format check (minute hour day month weekday)
         for part in parts:
-            if not (part.isdigit() or part == "*" or "/" in part or "-" in part or "," in part):
+            if not (
+                part.isdigit()
+                or part == "*"
+                or "/" in part
+                or "-" in part
+                or "," in part
+            ):
                 return False
 
         return True
 
     def _create_cronjob_manifest(
-        self, experiment_name: str, schedule: str, experiment_yaml: Dict[str, Any], namespace: str
+        self,
+        experiment_name: str,
+        schedule: str,
+        experiment_yaml: Dict[str, Any],
+        namespace: str,
     ) -> Dict[str, Any]:
         """Create CronJob manifest for scheduled experiment"""
 
@@ -189,7 +218,12 @@ class ChaosScheduler:
             },
             "spec": {
                 "template": {
-                    "metadata": {"labels": {"app": "chaos-scheduler", "experiment": experiment_name}},
+                    "metadata": {
+                        "labels": {
+                            "app": "chaos-scheduler",
+                            "experiment": experiment_name,
+                        }
+                    },
                     "spec": {
                         "serviceAccountName": "litmus-admin",
                         "restartPolicy": "OnFailure",
@@ -198,7 +232,10 @@ class ChaosScheduler:
                                 "name": "chaos-runner",
                                 "image": "bitnami/kubectl:latest",
                                 "command": ["/bin/sh"],
-                                "args": ["-c", f"kubectl apply -f - <<EOF\n{yaml.dump(experiment_yaml)}EOF"],
+                                "args": [
+                                    "-c",
+                                    f"kubectl apply -f - <<EOF\n{yaml.dump(experiment_yaml)}EOF",
+                                ],
                             }
                         ],
                     },
@@ -234,7 +271,9 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # Create scheduled experiment
-    create_parser = subparsers.add_parser("create", help="Create a scheduled experiment")
+    create_parser = subparsers.add_parser(
+        "create", help="Create a scheduled experiment"
+    )
     create_parser.add_argument("experiment", help="Experiment name")
     create_parser.add_argument("schedule", help='Cron schedule (e.g., "0 2 * * *")')
     create_parser.add_argument("--file", help="Path to experiment YAML file")
@@ -245,7 +284,9 @@ def main():
     list_parser.add_argument("--namespace", help="Kubernetes namespace")
 
     # Delete scheduled experiment
-    delete_parser = subparsers.add_parser("delete", help="Delete a scheduled experiment")
+    delete_parser = subparsers.add_parser(
+        "delete", help="Delete a scheduled experiment"
+    )
     delete_parser.add_argument("experiment", help="Experiment name")
     delete_parser.add_argument("--namespace", help="Kubernetes namespace")
 
@@ -268,7 +309,9 @@ def main():
             sys.exit(0 if success else 1)
 
         elif args.command == "list":
-            experiments = scheduler.list_scheduled_experiments(namespace=getattr(args, "namespace", None))
+            experiments = scheduler.list_scheduled_experiments(
+                namespace=getattr(args, "namespace", None)
+            )
             if experiments:
                 logger.info("Scheduled experiments:")
                 for exp in experiments:
@@ -278,7 +321,8 @@ def main():
 
         elif args.command == "delete":
             success = scheduler.delete_scheduled_experiment(
-                experiment_name=args.experiment, namespace=getattr(args, "namespace", None)
+                experiment_name=args.experiment,
+                namespace=getattr(args, "namespace", None),
             )
             sys.exit(0 if success else 1)
 

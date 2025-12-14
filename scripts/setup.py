@@ -34,7 +34,9 @@ def check_prerequisites():
     # Check if kubectl can connect to cluster
     result = run_command("kubectl cluster-info", check=False)
     if not result:
-        logger.error("Cannot connect to Kubernetes cluster. Please ensure your cluster is running.")
+        logger.error(
+            "Cannot connect to Kubernetes cluster. Please ensure your cluster is running."
+        )
         return False
     logger.info("✅ Connected to Kubernetes cluster")
     return True
@@ -49,16 +51,24 @@ def install_litmuschaos():
     run_command("helm repo update")
 
     # Install LitmusChaos
-    run_command(f"helm install litmus litmuschaos/litmus --namespace {config.litmus_namespace} --create-namespace")
+    run_command(
+        f"helm install litmus litmuschaos/litmus --namespace {config.litmus_namespace} --create-namespace"
+    )
 
     logger.info("Waiting for LitmusChaos pods to be ready...")
     try:
-        wait_for_pods(namespace=config.litmus_namespace, timeout=config.default_timeout, check_interval=config.check_interval)
+        wait_for_pods(
+            namespace=config.litmus_namespace,
+            timeout=config.default_timeout,
+            check_interval=config.check_interval,
+        )
         logger.info("✅ LitmusChaos pods are ready")
     except Exception as e:
         logger.error(f"Failed to wait for LitmusChaos pods: {e}")
         # Still show pod status
-        result = run_command(f"kubectl get pods -n {config.litmus_namespace}", check=False)
+        result = run_command(
+            f"kubectl get pods -n {config.litmus_namespace}", check=False
+        )
         if result:
             logger.info(f"LitmusChaos pods status:\n{result}")
         raise
@@ -99,7 +109,9 @@ def setup_monitoring():
     logger.info("Setting up monitoring...")
 
     # Add Prometheus Helm repository
-    run_command("helm repo add prometheus-community https://prometheus-community.github.io/helm-charts")
+    run_command(
+        "helm repo add prometheus-community https://prometheus-community.github.io/helm-charts"
+    )
     run_command("helm repo update")
 
     # Install Prometheus stack
@@ -110,13 +122,17 @@ def setup_monitoring():
     logger.info("Waiting for monitoring pods to be ready...")
     try:
         wait_for_pods(
-            namespace=config.monitoring_namespace, timeout=config.default_timeout, check_interval=config.check_interval
+            namespace=config.monitoring_namespace,
+            timeout=config.default_timeout,
+            check_interval=config.check_interval,
         )
         logger.info("✅ Monitoring pods are ready")
     except Exception as e:
         logger.error(f"Failed to wait for monitoring pods: {e}")
         # Still show pod status
-        result = run_command(f"kubectl get pods -n {config.monitoring_namespace}", check=False)
+        result = run_command(
+            f"kubectl get pods -n {config.monitoring_namespace}", check=False
+        )
         if result:
             logger.info(f"Monitoring pods status:\n{result}")
         raise
@@ -155,10 +171,16 @@ def main():
 
         logger.info("✅ Setup completed!")
         print("\nNext steps:")
-        print(f"1. Run chaos experiments: kubectl apply -f {config.experiments_dir}/pod-delete.yaml")
+        print(
+            f"1. Run chaos experiments: kubectl apply -f {config.experiments_dir}/pod-delete.yaml"
+        )
         if config.monitoring_enabled:
-            print(f"2. Access Grafana: kubectl port-forward svc/monitoring-grafana -n {config.monitoring_namespace} 3000:80")
-        print(f"3. Check application: kubectl port-forward svc/flask-app-service -n {config.app_namespace} 8080:80")
+            print(
+                f"2. Access Grafana: kubectl port-forward svc/monitoring-grafana -n {config.monitoring_namespace} 3000:80"
+            )
+        print(
+            f"3. Check application: kubectl port-forward svc/flask-app-service -n {config.app_namespace} 8080:80"
+        )
 
     except KeyboardInterrupt:
         logger.info("\nSetup cancelled by user")
