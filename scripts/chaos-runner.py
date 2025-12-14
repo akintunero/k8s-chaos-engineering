@@ -8,14 +8,8 @@ import sys
 import time
 from pathlib import Path
 
-from utils import (
-    ExperimentConfig,
-    get_config,
-    get_logger,
-    run_command,
-    validate_experiment_name,
-    validate_namespace,
-)
+from utils import (ExperimentConfig, get_config, get_logger, run_command,
+                   validate_experiment_name, validate_namespace)
 
 logger = get_logger(__name__)
 config = get_config()
@@ -131,9 +125,7 @@ def stop_experiment(experiment_name: str, namespace: str = None):
         logger.warning(f"Failed to stop experiment: {experiment_name}")
 
     # Delete the experiment
-    result = run_command(
-        f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False
-    )
+    result = run_command(f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False)
     if result:
         logger.info(f"✅ Stopped and deleted experiment: {experiment_name}")
     else:
@@ -196,20 +188,12 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage:")
-        print(
-            "  python chaos-runner.py list                    # List available experiments"
-        )
+        print("  python chaos-runner.py list                    # List available experiments")
         print("  python chaos-runner.py run <experiment>        # Run an experiment")
-        print(
-            "  python chaos-runner.py status <experiment>     # Check experiment status"
-        )
+        print("  python chaos-runner.py status <experiment>     # Check experiment status")
         print("  python chaos-runner.py stop <experiment>       # Stop an experiment")
-        print(
-            "  python chaos-runner.py running                 # List running experiments"
-        )
-        print(
-            "  python chaos-runner.py cleanup                 # Clean up all experiments"
-        )
+        print("  python chaos-runner.py running                 # List running experiments")
+        print("  python chaos-runner.py cleanup                 # Clean up all experiments")
         sys.exit(1)
 
     action = sys.argv[1]
