@@ -55,13 +55,15 @@ def run_command(
 
     for attempt in range(retries):
         try:
-            result = subprocess.run(  # nosec B602 - shell=True required for kubectl commands
-                command,
-                shell=True,
-                check=check,
-                capture_output=True,
-                text=True,
-                timeout=timeout,
+            result = (
+                subprocess.run(  # nosec B602 - shell=True required for kubectl commands
+                    command,
+                    shell=True,
+                    check=check,
+                    capture_output=True,
+                    text=True,
+                    timeout=timeout,
+                )
             )
 
             if result.returncode == 0:

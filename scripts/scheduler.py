@@ -92,9 +92,7 @@ class ChaosScheduler:
         )
 
         # Apply CronJob
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".yaml", delete=False
-        ) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(cronjob, f)
             cronjob_file = Path(f.name)
         try:

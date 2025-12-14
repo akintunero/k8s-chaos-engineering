@@ -14,8 +14,10 @@ from datetime import datetime
 def run_command(command, check=True):
     """Run a shell command and return the result"""
     try:
-        result = subprocess.run(  # nosec B602 - shell=True required for kubectl commands
-            command, shell=True, check=check, capture_output=True, text=True
+        result = (
+            subprocess.run(  # nosec B602 - shell=True required for kubectl commands
+                command, shell=True, check=check, capture_output=True, text=True
+            )
         )
         return result.stdout.strip()
     except subprocess.CalledProcessError as e:

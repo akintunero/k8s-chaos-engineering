@@ -148,7 +148,9 @@ class NotificationService:
                 data=json.dumps(slack_message).encode("utf-8"),
                 headers={"Content-Type": "application/json"},
             )
-            response = urlopen(req, timeout=10)  # nosec B310 - URL validated from config
+            response = urlopen(
+                req, timeout=10
+            )  # nosec B310 - URL validated from config
             if response.status == 200:
                 logger.info("✅ Slack notification sent")
                 return True
