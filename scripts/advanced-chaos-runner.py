@@ -11,8 +11,13 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-from utils import (get_config, get_logger, run_command,
-                   validate_experiment_name, validate_namespace)
+from utils import (
+    get_config,
+    get_logger,
+    run_command,
+    validate_experiment_name,
+    validate_namespace,
+)
 
 logger = get_logger(__name__)
 config = get_config()
@@ -124,7 +129,9 @@ class AdvancedChaosRunner:
             logger.warning("Could not retrieve engine status")
 
         # Check for chaos pods
-        result = run_command(f"kubectl get pods -n {self.namespace} -l job-name", check=False)
+        result = run_command(
+            f"kubectl get pods -n {self.namespace} -l job-name", check=False
+        )
         if result:
             logger.info("Chaos Pods:")
             logger.info(result)
@@ -140,13 +147,17 @@ class AdvancedChaosRunner:
         logger.info("Monitoring comprehensive workflow...")
 
         # Check all chaos engines
-        result = run_command(f"kubectl get chaosengine -n {self.namespace}", check=False)
+        result = run_command(
+            f"kubectl get chaosengine -n {self.namespace}", check=False
+        )
         if result:
             logger.info("Active Chaos Engines:")
             logger.info(result)
 
         # Check application health
-        result = run_command(f"kubectl get pods -n {self.namespace} -l app=flask-app", check=False)
+        result = run_command(
+            f"kubectl get pods -n {self.namespace} -l app=flask-app", check=False
+        )
         if result:
             logger.info("Application Pods Status:")
             logger.info(result)
@@ -190,7 +201,9 @@ class AdvancedChaosRunner:
         }
 
         # Get all chaos engines
-        result = run_command(f"kubectl get chaosengine -n {self.namespace} -o json", check=False)
+        result = run_command(
+            f"kubectl get chaosengine -n {self.namespace} -o json", check=False
+        )
         if result:
             try:
                 engines = json.loads(result)
@@ -214,7 +227,13 @@ class AdvancedChaosRunner:
                 pods = json.loads(result)
                 report["application"] = {
                     "total_pods": len(pods.get("items", [])),
-                    "ready_pods": len([p for p in pods.get("items", []) if p["status"]["phase"] == "Running"]),
+                    "ready_pods": len(
+                        [
+                            p
+                            for p in pods.get("items", [])
+                            if p["status"]["phase"] == "Running"
+                        ]
+                    ),
                 }
             except json.JSONDecodeError as e:
                 logger.error(f"Failed to parse pods JSON: {e}")
@@ -233,7 +252,9 @@ class AdvancedChaosRunner:
 
     def cleanup_all_experiments(self):
         """Clean up all chaos experiments"""
-        logger.info(f"Cleaning up all chaos experiments in namespace '{self.namespace}'...")
+        logger.info(
+            f"Cleaning up all chaos experiments in namespace '{self.namespace}'..."
+        )
 
         # Get all chaos engines
         result = run_command(
