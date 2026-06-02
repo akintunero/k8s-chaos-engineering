@@ -1,5 +1,5 @@
 // Jenkins Pipeline for Chaos Engineering Tests
-// Usage: Load this as a Jenkinsfile or include in your pipeline
+// Usage: Load this as a Jenkinsfile or include in a consumer CI pipeline
 
 pipeline {
     agent any

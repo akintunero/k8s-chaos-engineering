@@ -1,0 +1,22 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chaos-quickstart
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: chaos-engineering
+  source:
+    repoURL: https://github.com/akintunero/k8s-chaos-engineering.git
+    targetRevision: main
+    path: examples/quickstart
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hello-world-app
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

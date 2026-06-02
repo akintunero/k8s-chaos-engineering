@@ -1,0 +1,20 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: chaos-experiments
+  namespace: argocd
+spec:
+  project: chaos-engineering
+  source:
+    repoURL: https://github.com/akintunero/k8s-chaos-engineering.git
+    targetRevision: main
+    path: experiments
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: hello-world-app
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+  # Experiments are not auto-synced by default — enable when ready to run chaos.
+  # syncPolicy:
+  #   automated: {}

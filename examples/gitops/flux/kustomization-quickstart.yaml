@@ -1,0 +1,14 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: chaos-quickstart
+  namespace: flux-system
+spec:
+  interval: 10m
+  path: ./examples/quickstart
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: k8s-chaos-engineering
+  targetNamespace: hello-world-app
+  timeout: 5m

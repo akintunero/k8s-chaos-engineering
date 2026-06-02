@@ -1,0 +1,26 @@
+name: Feature request
+description: Suggest an improvement for experiments, automation, or docs
+title: "[feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem or use case
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+  - type: dropdown
+    id: roadmap-phase
+    attributes:
+      label: Roadmap phase (if known)
+      options:
+        - "Phase 3 — OSS hardening"
+        - "Phase 4 — CI/GitOps"
+        - "Phase 6 — Safety/governance"
+        - "Phase 7 — GameDay"
+        - "Phase 8 — SLO/reporting"
+        - "Other / not sure"

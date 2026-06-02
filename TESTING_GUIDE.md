@@ -1,4 +1,7 @@
-# 🧪 Testing Guide for Chaos Engineering Framework
+# Testing guide (legacy)
+
+> **Preferred path:** `make quickstart`, `k8s-chaos doctor`, and [CONTRIBUTING.md](CONTRIBUTING.md).  
+> This guide predates the `k8s-chaos` CLI; commands below use older `scripts/` entrypoints where noted.
 
 ## Prerequisites Setup
 
@@ -147,7 +150,7 @@ kubectl logs -n hello-world-app -l job-name
 # Port forward Grafana
 kubectl port-forward svc/monitoring-grafana -n monitoring 3000:80
 
-# Open http://localhost:3000 in your browser
+# Open http://localhost:3000 in a browser
 # Login: admin/admin
 ```
 
@@ -286,7 +289,7 @@ kubectl get events -n hello-world-app --sort-by='.lastTimestamp'
 ## 🚀 Next Steps
 
 After successful testing:
-1. Customize experiment parameters for your environment
+1. Tune experiment parameters in `experiments/catalog.yaml` and `config/blast-radius.yaml`
 2. Create application-specific chaos tests
 3. Integrate with CI/CD pipelines
 4. Set up production monitoring

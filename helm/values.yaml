@@ -1,11 +1,14 @@
 replicaCount: 2
+
 image:
-  repository: [USER_REGISTRY]/flask-chaos-demo
-  tag: latest
+  repository: nginx
+  tag: alpine
   pullPolicy: IfNotPresent
+
 service:
   type: ClusterIP
-  port: 5000
+  port: 80
+
 resources:
   limits:
     cpu: 200m
@@ -13,3 +16,19 @@ resources:
   requests:
     cpu: 100m
     memory: 128Mi
+
+securityContext:
+  runAsUser: 101
+  runAsGroup: 101
+  fsGroup: 101
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env:
+  MAX_DELAY_SECONDS: "0"
+  ERROR_RATE: "0"
+  DEBUG: "false"

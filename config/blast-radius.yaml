@@ -1,0 +1,51 @@
+# Blast-radius profiles — set active profile via CHAOS_ENV (dev | staging | prod)
+profiles:
+  dev:
+    description: Local development and quickstart
+    allowed_experiments:
+      - pod-delete
+      - cpu-hog
+      - memory-hog
+      - network-latency
+      - network-partition
+      - disk-stress
+      - custom-chaos
+    blocked_namespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+    max_duration_seconds: 300
+    require_app_healthy: true
+    allow_abort_all: true
+
+  staging:
+    description: Pre-production resilience testing
+    allowed_experiments:
+      - pod-delete
+      - network-latency
+      - cpu-hog
+      - memory-hog
+    blocked_namespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - default
+    max_duration_seconds: 120
+    require_app_healthy: true
+    allow_abort_all: true
+
+  prod:
+    description: Production — highly restricted (opt-in only)
+    allowed_experiments:
+      - pod-delete
+    blocked_namespaces:
+      - kube-system
+      - kube-public
+      - kube-node-lease
+      - default
+      - monitoring
+      - litmus
+    max_duration_seconds: 60
+    require_app_healthy: true
+    require_explicit_confirm: true
+    allow_abort_all: true

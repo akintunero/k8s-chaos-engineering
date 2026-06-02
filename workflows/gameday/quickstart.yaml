@@ -1,0 +1,28 @@
+name: quickstart
+description: Minimal GameDay — baseline probe, pod-delete, SLO verification
+namespace: hello-world-app
+deployment: flask-app
+expected_replicas: 3
+default_recovery_timeout_seconds: 120
+
+steps:
+  - id: baseline
+    type: probe
+    description: Verify steady state before injecting chaos
+    probes:
+      - name: deployment_baseline
+        type: deployment_ready
+        min_ready_replicas: 3
+        max_recovery_seconds: 30
+      - name: pods_baseline
+        type: pods_ready_ratio
+        label_selector: app=flask-app
+        min_ready_ratio: 1.0
+
+  - id: pod-delete
+    type: experiment
+    description: Delete pods and verify recovery
+    experiment: pod-delete
+    chaos_wait_seconds: 45
+    recovery_timeout_seconds: 120
+    cleanup: true

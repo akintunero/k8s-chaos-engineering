@@ -1,59 +1,30 @@
 """
-FastAPI Backend for Chaos Engineering Web UI
+FastAPI backend for the Chaos Engineering web UI.
 """
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from pydantic import BaseModel
-from typing import List, Optional, Dict, Any
-import json
-import asyncio
+from __future__ import annotations
+
+import os
 from datetime import datetime
-import sys
-from pathlib import Path
+from typing import List, Optional
 
-# Add scripts to path
-scripts_dir = Path(__file__).parent.parent.parent / "scripts"
-sys.path.insert(0, str(scripts_dir))
+from fastapi import Depends, FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 
-import importlib.util
-
-# Import from scripts directory
-spec = importlib.util.spec_from_file_location("chaos_runner", scripts_dir / "chaos-runner.py")
-chaos_runner = importlib.util.module_from_spec(spec)
-sys.modules["chaos_runner"] = chaos_runner
-spec.loader.exec_module(chaos_runner)
-
-spec = importlib.util.spec_from_file_location("scheduler", scripts_dir / "scheduler.py")
-scheduler_module = importlib.util.module_from_spec(spec)
-sys.modules["scheduler"] = scheduler_module
-spec.loader.exec_module(scheduler_module)
-
-spec = importlib.util.spec_from_file_location("notifications", scripts_dir / "notifications.py")
-notifications_module = importlib.util.module_from_spec(spec)
-sys.modules["notifications"] = notifications_module
-spec.loader.exec_module(notifications_module)
-
+from loader import load_chaos_modules
 from utils import get_config, get_logger
 
-# Import modules dynamically (handling hyphens in filenames)
-spec = importlib.util.spec_from_file_location("chaos_runner", scripts_dir / "chaos-runner.py")
-chaos_runner = importlib.util.module_from_spec(spec)
-sys.modules["chaos_runner"] = chaos_runner
-spec.loader.exec_module(chaos_runner)
+try:
+    from api_v1 import router as api_v1_router
+except ImportError:
+    api_v1_router = None
 
-spec = importlib.util.spec_from_file_location("scheduler", scripts_dir / "scheduler.py")
-scheduler_module = importlib.util.module_from_spec(spec)
-sys.modules["scheduler"] = scheduler_module
-spec.loader.exec_module(scheduler_module)
+mods = load_chaos_modules()
+chaos_runner = mods["chaos_runner"]
+scheduler_module = mods["scheduler"]
+notifications_module = mods["notifications"]
 
-spec = importlib.util.spec_from_file_location("notifications", scripts_dir / "notifications.py")
-notifications_module = importlib.util.module_from_spec(spec)
-sys.modules["notifications"] = notifications_module
-spec.loader.exec_module(notifications_module)
-
-# Now import functions
 list_experiments = chaos_runner.list_experiments
 run_experiment = chaos_runner.run_experiment
 check_experiment_status = chaos_runner.check_experiment_status
@@ -66,197 +37,210 @@ app = FastAPI(title="Chaos Engineering API", version="1.0.0")
 config = get_config()
 logger = get_logger(__name__)
 
-# CORS middleware
+if api_v1_router is not None:
+    app.include_router(api_v1_router)
+
+_cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000").split(",")
+_api_key = os.getenv("CHAOS_API_KEY", "")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, specify actual origins
+    allow_origins=[o.strip() for o in _cors_origins if o.strip()],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# WebSocket connections
+
+def verify_api_key(x_api_key: Optional[str] = Header(default=None)) -> None:
+    if _api_key and x_api_key != _api_key:
+        raise HTTPException(status_code=401, detail="Invalid API key")
+
+
 class ConnectionManager:
-    def __init__(self):
+    def __init__(self) -> None:
         self.active_connections: List[WebSocket] = []
-    
-    async def connect(self, websocket: WebSocket):
+
+    async def connect(self, websocket: WebSocket) -> None:
         await websocket.accept()
         self.active_connections.append(websocket)
-    
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.remove(websocket)
-    
-    async def broadcast(self, message: dict):
-        for connection in self.active_connections:
+
+    def disconnect(self, websocket: WebSocket) -> None:
+        if websocket in self.active_connections:
+            self.active_connections.remove(websocket)
+
+    async def broadcast(self, message: dict) -> None:
+        for connection in list(self.active_connections):
             try:
                 await connection.send_json(message)
-            except:
-                pass
+            except Exception:
+                self.disconnect(connection)
+
 
 manager = ConnectionManager()
 scheduler = ChaosScheduler()
 notification_service = NotificationService()
 
 
-# Pydantic models
 class ExperimentRequest(BaseModel):
     name: str
     namespace: Optional[str] = None
+
 
 class ScheduleRequest(BaseModel):
     experiment: str
     schedule: str
     namespace: Optional[str] = None
 
-class NotificationRequest(BaseModel):
-    message: str
-    title: str = "Chaos Experiment"
-    level: str = "info"
-    experiment_name: Optional[str] = None
+
+@app.get("/healthz")
+async def healthz():
+    return {"status": "ok"}
 
 
-# API Routes
 @app.get("/")
 async def root():
     return {"message": "Chaos Engineering API", "version": "1.0.0"}
 
-@app.get("/api/experiments")
+
+@app.get("/api/experiments", dependencies=[Depends(verify_api_key)])
 async def get_experiments():
-    """Get list of available experiments"""
     try:
-        experiments = list_experiments()
-        return {"experiments": experiments}
-    except Exception as e:
-        logger.error(f"Error listing experiments: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"experiments": list_experiments()}
+    except Exception as exc:
+        logger.error("Error listing experiments: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.get("/api/experiments/running")
+
+@app.get("/api/experiments/running", dependencies=[Depends(verify_api_key)])
 async def get_running_experiments():
-    """Get list of running experiments"""
     try:
-        # This would need to be adapted to return JSON
-        experiments = list_running_experiments()
-        return {"running": []}  # Placeholder
-    except Exception as e:
-        logger.error(f"Error getting running experiments: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        list_running_experiments()
+        return {"running": [], "note": "Use kubectl get chaosengine for details"}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.post("/api/experiments/run")
+
+@app.post("/api/experiments/run", dependencies=[Depends(verify_api_key)])
 async def run_experiment_api(request: ExperimentRequest):
-    """Run a chaos experiment"""
     try:
         namespace = request.namespace or config.app_namespace
         run_experiment(request.name, namespace)
-        
-        # Send notification
         notification_service.notify_experiment_started(request.name, namespace)
-        
-        # Broadcast to WebSocket clients
-        await manager.broadcast({
-            "type": "experiment_started",
-            "experiment": request.name,
-            "namespace": namespace,
-            "timestamp": datetime.now().isoformat()
-        })
-        
+        await manager.broadcast(
+            {
+                "type": "experiment_started",
+                "experiment": request.name,
+                "namespace": namespace,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
         return {"status": "started", "experiment": request.name}
-    except Exception as e:
-        logger.error(f"Error running experiment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        logger.error("Error running experiment: %s", exc)
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.get("/api/experiments/{experiment_name}/status")
+
+@app.get("/api/experiments/{experiment_name}/status", dependencies=[Depends(verify_api_key)])
 async def get_experiment_status(experiment_name: str, namespace: Optional[str] = None):
-    """Get status of an experiment"""
     try:
-        namespace = namespace or config.app_namespace
-        check_experiment_status(experiment_name, namespace)
-        return {"status": "checking", "experiment": experiment_name}
-    except Exception as e:
-        logger.error(f"Error checking experiment status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        check_experiment_status(experiment_name, namespace or config.app_namespace)
+        return {"status": "checked", "experiment": experiment_name}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.post("/api/experiments/{experiment_name}/stop")
+
+@app.post("/api/experiments/{experiment_name}/stop", dependencies=[Depends(verify_api_key)])
 async def stop_experiment_api(experiment_name: str, namespace: Optional[str] = None):
-    """Stop a running experiment"""
     try:
-        namespace = namespace or config.app_namespace
-        stop_experiment(experiment_name, namespace)
-        
-        await manager.broadcast({
-            "type": "experiment_stopped",
-            "experiment": experiment_name,
-            "namespace": namespace,
-            "timestamp": datetime.now().isoformat()
-        })
-        
+        ns = namespace or config.app_namespace
+        stop_experiment(experiment_name, ns)
+        await manager.broadcast(
+            {
+                "type": "experiment_stopped",
+                "experiment": experiment_name,
+                "namespace": ns,
+                "timestamp": datetime.now().isoformat(),
+            }
+        )
         return {"status": "stopped", "experiment": experiment_name}
-    except Exception as e:
-        logger.error(f"Error stopping experiment: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.get("/api/schedules")
+
+@app.post("/api/abort", dependencies=[Depends(verify_api_key)])
+async def abort_api(namespace: Optional[str] = None):
+    from abort import abort_namespace
+
+    ns = namespace or config.app_namespace
+    total = abort_namespace(ns)
+    return {"status": "aborted", "count": total, "namespace": ns}
+
+
+@app.get("/api/schedules", dependencies=[Depends(verify_api_key)])
 async def get_schedules():
-    """Get list of scheduled experiments"""
     try:
-        schedules = scheduler.list_scheduled_experiments()
-        return {"schedules": schedules}
-    except Exception as e:
-        logger.error(f"Error getting schedules: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"schedules": scheduler.list_scheduled_experiments()}
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.post("/api/schedules")
+
+@app.post("/api/schedules", dependencies=[Depends(verify_api_key)])
 async def create_schedule(request: ScheduleRequest):
-    """Create a scheduled experiment"""
     try:
         success = scheduler.create_scheduled_experiment(
             experiment_name=request.experiment,
             schedule=request.schedule,
-            namespace=request.namespace
+            namespace=request.namespace,
         )
-        if success:
-            return {"status": "created", "experiment": request.experiment, "schedule": request.schedule}
-        else:
+        if not success:
             raise HTTPException(status_code=400, detail="Failed to create schedule")
-    except Exception as e:
-        logger.error(f"Error creating schedule: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "status": "created",
+            "experiment": request.experiment,
+            "schedule": request.schedule,
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.delete("/api/schedules/{experiment_name}")
+
+@app.delete("/api/schedules/{experiment_name}", dependencies=[Depends(verify_api_key)])
 async def delete_schedule(experiment_name: str):
-    """Delete a scheduled experiment"""
     try:
-        success = scheduler.delete_scheduled_experiment(experiment_name)
-        if success:
+        if scheduler.delete_scheduled_experiment(experiment_name):
             return {"status": "deleted", "experiment": experiment_name}
-        else:
-            raise HTTPException(status_code=404, detail="Schedule not found")
-    except Exception as e:
-        logger.error(f"Error deleting schedule: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=404, detail="Schedule not found")
+    except HTTPException:
+        raise
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-@app.get("/api/config")
+
+@app.get("/api/config", dependencies=[Depends(verify_api_key)])
 async def get_config_api():
-    """Get current configuration"""
     return {
         "app_namespace": config.app_namespace,
         "litmus_namespace": config.litmus_namespace,
         "monitoring_namespace": config.monitoring_namespace,
-        "monitoring_enabled": config.monitoring_enabled
+        "monitoring_enabled": config.monitoring_enabled,
+        "chaos_env": os.getenv("CHAOS_ENV", "dev"),
     }
 
-# WebSocket endpoint
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
             data = await websocket.receive_text()
-            # Echo back or process message
             await websocket.send_json({"type": "echo", "data": data})
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
+
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)

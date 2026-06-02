@@ -1,0 +1,36 @@
+# Multi-cluster registry — copy to clusters.yaml and edit contexts.
+# Use: k8s-chaos clusters | k8s-chaos clusters staging --experiment pod-delete
+
+policies:
+  allow_prod: false
+  require_confirm_for:
+    - prod
+
+clusters:
+  - name: local
+    context: kind-chaos-e2e
+    chaos_env: dev
+    default_namespace: hello-world-app
+    allowed_experiments:
+      - pod-delete
+      - network-latency
+      - cpu-hog
+    enabled: true
+
+  - name: staging-primary
+    context: staging-primary
+    chaos_env: staging
+    default_namespace: hello-world-app
+    allowed_experiments:
+      - pod-delete
+      - network-latency
+    enabled: true
+
+  # Example production entry — disabled by default
+  - name: prod-primary
+    context: prod-primary
+    chaos_env: prod
+    default_namespace: hello-world-app
+    allowed_experiments:
+      - pod-delete
+    enabled: false

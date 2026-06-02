@@ -1,5 +1,5 @@
 # GitLab CI template for chaos engineering tests
-# Usage: include this template in your .gitlab-ci.yml
+# Usage: include this template in a consumer repository .gitlab-ci.yml
 
 .chaos_test_template: &chaos_test_template
   image: python:3.11

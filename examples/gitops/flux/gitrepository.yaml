@@ -1,0 +1,10 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: k8s-chaos-engineering
+  namespace: flux-system
+spec:
+  interval: 1h
+  url: https://github.com/akintunero/k8s-chaos-engineering
+  ref:
+    branch: main

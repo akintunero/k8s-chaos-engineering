@@ -1,0 +1,28 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: network-partition
+  namespace: hello-world-app
+spec:
+  appinfo:
+    appns: hello-world-app
+    applabel: "app=flask-app"
+    appkind: deployment
+  annotationCheck: "false"
+  engineState: "active"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-network-partition
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "10"
+            - name: NETWORK_PARTITION_MODE
+              value: "loss"  # Options: loss, delay, duplicate, corrupt
+            - name: PACKET_LOSS_PERCENTAGE
+              value: "100"
+            - name: TARGET_CONTAINER
+              value: "flask-app" 

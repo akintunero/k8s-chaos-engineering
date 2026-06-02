@@ -7,7 +7,7 @@ import time
 from unittest.mock import Mock, patch, MagicMock
 import json
 
-from scripts.utils.k8s import (
+from k8s_chaos.utils.k8s import (
     run_command,
     wait_for_pods,
     wait_for_deployment,
@@ -20,7 +20,7 @@ from scripts.utils.k8s import (
 class TestRunCommand:
     """Tests for run_command function"""
     
-    @patch('scripts.utils.k8s.subprocess.run')
+    @patch('k8s_chaos.utils.k8s.subprocess.run')
     def test_run_command_success(self, mock_subprocess):
         """Test successful command execution"""
         mock_result = Mock()
@@ -32,7 +32,7 @@ class TestRunCommand:
         assert result == "test output"
         mock_subprocess.assert_called_once()
     
-    @patch('scripts.utils.k8s.subprocess.run')
+    @patch('k8s_chaos.utils.k8s.subprocess.run')
     def test_run_command_failure_with_retry(self, mock_subprocess):
         """Test command failure with retries"""
         mock_result = Mock()
@@ -45,7 +45,7 @@ class TestRunCommand:
         
         assert mock_subprocess.call_count == 2
     
-    @patch('scripts.utils.k8s.subprocess.run')
+    @patch('k8s_chaos.utils.k8s.subprocess.run')
     def test_run_command_no_check(self, mock_subprocess):
         """Test command failure without check"""
         mock_result = Mock()
@@ -60,7 +60,7 @@ class TestRunCommand:
 class TestWaitForPods:
     """Tests for wait_for_pods function"""
     
-    @patch('scripts.utils.k8s.run_command')
+    @patch('k8s_chaos.utils.k8s.run_command')
     def test_wait_for_pods_success(self, mock_run_command):
         """Test successful pod wait"""
         pods_json = {
@@ -81,7 +81,7 @@ class TestWaitForPods:
         result = wait_for_pods("test-namespace", timeout=10, check_interval=1)
         assert result is True
     
-    @patch('scripts.utils.k8s.run_command')
+    @patch('k8s_chaos.utils.k8s.run_command')
     def test_wait_for_pods_timeout(self, mock_run_command):
         """Test pod wait timeout"""
         mock_run_command.return_value = json.dumps({'items': []})
@@ -89,7 +89,7 @@ class TestWaitForPods:
         with pytest.raises(TimeoutError):
             wait_for_pods("test-namespace", timeout=2, check_interval=1)
     
-    @patch('scripts.utils.k8s.run_command')
+    @patch('k8s_chaos.utils.k8s.run_command')
     def test_wait_for_pods_with_label_selector(self, mock_run_command):
         """Test pod wait with label selector"""
         pods_json = {
@@ -116,7 +116,7 @@ class TestWaitForPods:
 class TestWaitForDeployment:
     """Tests for wait_for_deployment function"""
     
-    @patch('scripts.utils.k8s.run_command')
+    @patch('k8s_chaos.utils.k8s.run_command')
     def test_wait_for_deployment_success(self, mock_run_command):
         """Test successful deployment wait"""
         deployment_json = {
@@ -134,7 +134,7 @@ class TestWaitForDeployment:
         result = wait_for_deployment("test-namespace", "test-deployment", timeout=10, check_interval=1)
         assert result is True
     
-    @patch('scripts.utils.k8s.run_command')
+    @patch('k8s_chaos.utils.k8s.run_command')
     def test_wait_for_deployment_timeout(self, mock_run_command):
         """Test deployment wait timeout"""
         mock_run_command.return_value = None

@@ -35,7 +35,7 @@ def check_prerequisites():
     result = run_command("kubectl cluster-info", check=False)
     if not result:
         logger.error(
-            "Cannot connect to Kubernetes cluster. Please ensure your cluster is running."
+            "Cannot connect to Kubernetes cluster. Ensure kubectl is configured and the cluster is reachable."
         )
         return False
     logger.info("✅ Connected to Kubernetes cluster")
@@ -75,12 +75,16 @@ def install_litmuschaos():
 
 
 def deploy_sample_app():
-    """Deploy the sample Flask application"""
-    logger.info("Deploying sample Flask application...")
+    """Deploy the sample application (quickstart kustomize overlay)."""
+    logger.info("Deploying quickstart sample application...")
 
-    # Apply the Flask app manifest
-    manifest_path = Path(config.manifests_dir) / "flask-app.yaml"
-    run_command(f"kubectl apply -f {manifest_path}")
+    repo_root = Path(__file__).resolve().parent.parent
+    quickstart = repo_root / "examples" / "quickstart"
+    if (quickstart / "kustomization.yaml").exists():
+        run_command(f"kubectl apply -k {quickstart}")
+    else:
+        manifest_path = Path(config.manifests_dir) / "flask-app.yaml"
+        run_command(f"kubectl apply -f {manifest_path}")
 
     logger.info("Waiting for Flask app pods to be ready...")
     try:
@@ -154,7 +158,7 @@ def main():
     print("4. Everything (recommended)")
 
     try:
-        choice = input("Enter your choice (1-4): ").strip()
+        choice = input("Enter choice (1-4): ").strip()
 
         if choice not in ["1", "2", "3", "4"]:
             logger.error("Invalid choice. Please enter 1, 2, 3, or 4.")

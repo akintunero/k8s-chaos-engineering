@@ -1,0 +1,81 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "k8s-chaos-engineering"
+version = "0.2.0"
+description = "LitmusChaos quickstart kit — experiments, GameDay workflows, and SLO reports for Kubernetes (requires kubectl and helm at runtime)"
+readme = "Readme.md"
+license = "Apache-2.0"
+requires-python = ">=3.9"
+authors = [
+  { name = "Olúmáyòwá Akinkuehinmi", email = "akintunero101@gmail.com" },
+]
+maintainers = [
+  { name = "Olúmáyòwá Akinkuehinmi", email = "akintunero101@gmail.com" },
+]
+keywords = [
+  "kubernetes",
+  "chaos-engineering",
+  "litmus",
+  "litmuschaos",
+  "sre",
+  "resilience",
+  "gameday",
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Developers",
+  "Intended Audience :: System Administrators",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: System :: Systems Administration",
+  "Topic :: Software Development :: Testing",
+]
+dependencies = [
+  "pyyaml>=6.0,<7.0",
+  "kubernetes>=28.1.0,<29.0.0",
+  "pydantic>=2.0.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.4.0",
+  "pytest-cov>=4.1.0",
+  "pytest-mock>=3.11.0",
+  "black>=23.0.0",
+  "flake8>=6.1.0",
+  "isort>=5.12.0",
+  "mypy>=1.5.0",
+  "build>=1.0.0",
+  "twine>=4.0.0",
+]
+web = [
+  "fastapi>=0.104.0,<1.0.0",
+  "uvicorn[standard]>=0.24.0,<1.0.0",
+]
+
+[project.scripts]
+k8s-chaos = "k8s_chaos.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/akintunero/k8s-chaos-engineering"
+Documentation = "https://github.com/akintunero/k8s-chaos-engineering#readme"
+Repository = "https://github.com/akintunero/k8s-chaos-engineering"
+Issues = "https://github.com/akintunero/k8s-chaos-engineering/issues"
+Changelog = "https://github.com/akintunero/k8s-chaos-engineering/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+k8s_chaos = ["data/**/*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "scripts"]

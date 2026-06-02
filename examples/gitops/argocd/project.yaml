@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: chaos-engineering
+  namespace: argocd
+spec:
+  description: Litmus chaos quickstart and experiments
+  sourceRepos:
+    - "*"
+  destinations:
+    - namespace: hello-world-app
+      server: https://kubernetes.default.svc
+    - namespace: litmus
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding

@@ -1,0 +1,14 @@
+# Active cluster registry — set kubectl context names for each entry.
+# See clusters.yaml.example for documentation.
+
+policies:
+  allow_prod: false
+  require_confirm_for:
+    - prod
+
+clusters:
+  - name: local
+    context: kind-chaos-e2e
+    chaos_env: dev
+    default_namespace: hello-world-app
+    enabled: true

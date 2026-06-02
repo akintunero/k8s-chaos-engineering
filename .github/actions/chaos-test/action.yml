@@ -1,71 +1,100 @@
 name: 'Chaos Engineering Test'
-description: 'Run chaos engineering experiments in CI/CD pipeline'
+description: 'Run chaos experiments or GameDays with SLO PASS/FAIL reports (v2)'
 inputs:
+  mode:
+    description: 'Run mode: experiment or gameday'
+    required: false
+    default: 'experiment'
   experiment:
-    description: 'Name of the chaos experiment to run'
-    required: true
+    description: 'Experiment name (mode=experiment)'
+    required: false
+    default: 'pod-delete'
+  gameday:
+    description: 'GameDay workflow name (mode=gameday)'
+    required: false
+    default: 'quickstart'
   namespace:
     description: 'Kubernetes namespace'
     required: false
     default: 'hello-world-app'
-  timeout:
-    description: 'Timeout in seconds'
+  chaos-wait-seconds:
+    description: 'Seconds to wait after starting chaos (experiment mode)'
     required: false
-    default: '300'
-  wait-for-recovery:
-    description: 'Wait for application recovery after experiment'
+    default: '45'
+  recovery-timeout:
+    description: 'Recovery timeout for SLO report'
+    required: false
+    default: '120'
+  chaos-env:
+    description: 'Blast-radius profile (dev, staging, prod)'
+    required: false
+    default: 'dev'
+  upload-report:
+    description: 'Upload report JSON as workflow artifact'
     required: false
     default: 'true'
 
 outputs:
-  experiment-status:
-    description: 'Status of the chaos experiment'
-  recovery-time:
-    description: 'Time taken for application recovery'
+  verdict:
+    description: 'PASS or FAIL'
+    value: ${{ steps.final.outputs.verdict }}
+  report-file:
+    description: 'Path to report JSON'
+    value: ${{ steps.final.outputs.report_file }}
 
 runs:
   using: 'composite'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - name: Install package
+      shell: bash
+      run: |
+        python -m pip install --upgrade pip
+        chmod +x hack/ensure-dev-install.sh hack/sync-package-data.sh
+        ./hack/ensure-dev-install.sh
+        ./hack/sync-package-data.sh
+        pip install -e .
+
+    - name: Run experiment mode
+      if: inputs.mode == 'experiment'
+      shell: bash
+      env:
+        CHAOS_ENV: ${{ inputs.chaos-env }}
+        SKIP_PREFLIGHT: '1'
+      run: |
+        k8s-chaos preflight --namespace ${{ inputs.namespace }}
+        k8s-chaos run ${{ inputs.experiment }}
+        sleep ${{ inputs.chaos-wait-seconds }}
+        k8s-chaos report ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
+
+    - name: Run GameDay mode
+      if: inputs.mode == 'gameday'
+      shell: bash
+      env:
+        CHAOS_ENV: ${{ inputs.chaos-env }}
+      run: |
+        k8s-chaos gameday ${{ inputs.gameday }}
+
+    - name: Resolve verdict and report path
+      id: final
+      shell: bash
+      run: |
+        if [ "${{ inputs.mode }}" = "gameday" ]; then
+          REPORT="reports/gameday-${{ inputs.gameday }}.json"
+        else
+          REPORT="reports/latest.json"
+        fi
+        verdict=$(python -c "import json; print(json.load(open('$REPORT'))['verdict'])")
+        echo "verdict=$verdict" >> "$GITHUB_OUTPUT"
+        echo "report_file=$REPORT" >> "$GITHUB_OUTPUT"
+
+    - name: Upload report artifact
+      if: inputs.upload-report == 'true'
+      uses: actions/upload-artifact@v4
       with:
-        python-version: '3.11'
-    
-    - name: Install dependencies
-      working-directory: scripts
-      shell: bash
-      run: |
-        pip install -r requirements.txt
-    
-    - name: Run chaos experiment
-      working-directory: scripts
-      shell: bash
-      run: |
-        python chaos-runner.py run ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
-      id: run-experiment
-    
-    - name: Wait for recovery
-      if: inputs.wait-for-recovery == 'true'
-      working-directory: scripts
-      shell: bash
-      run: |
-        echo "Waiting for application recovery..."
-        # Add recovery check logic here
-        sleep 30
-    
-    - name: Check experiment status
-      working-directory: scripts
-      shell: bash
-      run: |
-        python chaos-runner.py status ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
-      id: check-status
-    
+        name: chaos-report-${{ inputs.mode }}
+        path: ${{ steps.final.outputs.report_file }}
+
     - name: Cleanup experiment
-      if: always()
-      working-directory: scripts
+      if: always() && inputs.mode == 'experiment'
       shell: bash
-      run: |
-        python chaos-runner.py stop ${{ inputs.experiment }} --namespace ${{ inputs.namespace }}
+      run: k8s-chaos abort --namespace ${{ inputs.namespace }}

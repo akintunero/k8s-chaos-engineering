@@ -1,0 +1,130 @@
+# Machine-readable experiment catalog for docs, CLI, and UI.
+# See docs/version-matrix.md for supported Kubernetes / Litmus versions.
+
+experiments:
+  - name: pod-delete
+    phase: 2
+    blast_radius: low
+    description: Deletes application pods to verify Deployment recovery.
+    hypothesis: Deployment restores desired replicas within 60 seconds after chaos ends.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [local, staging]
+    slo:
+      - name: deployment_recovery
+        type: deployment_ready
+        min_ready_replicas: 3
+        max_recovery_seconds: 60
+      - name: pods_ready
+        type: pods_ready_ratio
+        label_selector: app=flask-app
+        min_ready_ratio: 1.0
+      - name: kube_pod_not_ready
+        type: prometheus
+        optional: true
+        query: sum(kube_pod_status_ready{namespace="hello-world-app",condition="false"})
+        operator: lte
+        threshold: 0
+
+  - name: cpu-hog
+    phase: 2
+    blast_radius: medium
+    description: Stresses CPU on target pods.
+    hypothesis: Application remains available or degrades within defined SLO under CPU pressure.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [local, staging]
+    slo:
+      - name: deployment_recovery
+        type: deployment_ready
+        min_ready_replicas: 3
+        max_recovery_seconds: 120
+      - name: pods_ready
+        type: pods_ready_ratio
+        label_selector: app=flask-app
+        min_ready_ratio: 0.66
+
+  - name: memory-hog
+    phase: 2
+    blast_radius: medium
+    description: Stresses memory on target pods.
+    hypothesis: Application recovers after memory pressure is removed.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [local, staging]
+
+  - name: network-latency
+    phase: 2
+    blast_radius: medium
+    description: Injects network latency toward the application.
+    hypothesis: Latency stays within acceptable bounds or triggers expected alerts.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [local, staging]
+    slo:
+      - name: deployment_recovery
+        type: deployment_ready
+        min_ready_replicas: 3
+        max_recovery_seconds: 120
+      - name: pods_ready
+        type: pods_ready_ratio
+        label_selector: app=flask-app
+        min_ready_ratio: 0.66
+
+  - name: network-partition
+    phase: 3
+    blast_radius: high
+    description: Partitions network connectivity for target workloads.
+    hypothesis: System detects partition and recovers when connectivity returns.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [staging]
+
+  - name: disk-stress
+    phase: 3
+    blast_radius: high
+    description: Stresses disk I/O on nodes or pods.
+    hypothesis: Storage-heavy paths degrade gracefully without data loss.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [staging]
+
+  - name: custom-chaos
+    phase: 3
+    blast_radius: medium
+    description: Multi-step or customized experiment workflow.
+    prerequisites:
+      - litmus
+      - quickstart-app
+    envs: [staging]
+
+  - name: multi-cluster-chaos
+    phase: 3
+    blast_radius: high
+    description: Advanced multi-cluster scenario (requires explicit operator setup).
+    prerequisites:
+      - litmus
+      - multi-cluster-config
+    envs: [staging]
+
+quickstart:
+  default_experiment: pod-delete
+  app_label: app=flask-app
+  deployment: flask-app
+  namespace: hello-world-app
+  expected_replicas: 3
+  recovery_timeout_seconds: 120
+
+gamedays:
+  - name: quickstart
+    description: Single-experiment GameDay for first-time validation
+    workflow: workflows/gameday/quickstart.yaml
+  - name: resilience-basics
+    description: Pod delete and network latency with steady-state gates
+    workflow: workflows/gameday/resilience-basics.yaml

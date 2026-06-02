@@ -6,14 +6,15 @@ We provide security updates for the following versions:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.0   | :white_check_mark: |
+| 0.2.x   | :white_check_mark: |
+| 0.1.x   | :white_check_mark: |
 
 ## Reporting a Vulnerability
 
 We take the security of our project seriously. If you believe you've found a security vulnerability, please follow these steps:
 
 1. **Do not** disclose the vulnerability publicly until it has been addressed by our team.
-2. Submit a detailed report to **akintunero101@gmail.com**.
+2. Submit a detailed report to **Olúmáyòwá Akinkuehinmi** at [akintunero101@gmail.com](mailto:akintunero101@gmail.com).
 3. Include:
    - Description of the vulnerability
    - Steps to reproduce
@@ -23,10 +24,10 @@ We take the security of our project seriously. If you believe you've found a sec
 ### Response Time
 
 We aim to:
-- Acknowledge receipt of your report within **48 hours**.
+- Acknowledge receipt of the vulnerability report within **48 hours**.
 - Provide a more detailed response as soon as possible.
 - Keep you informed about our progress.
-- Publicly acknowledge your responsible disclosure (if desired).
+- Publicly acknowledge responsible disclosure (if the reporter requests it).
 
 ## Security Measures
 
@@ -60,5 +61,6 @@ We follow these security best practices:
 ## Contact
 
 For security-related concerns, please contact:
-- Email: **akintunero101@gmail.com**
+
+- **Olúmáyòwá Akinkuehinmi** — [akintunero101@gmail.com](mailto:akintunero101@gmail.com)
 

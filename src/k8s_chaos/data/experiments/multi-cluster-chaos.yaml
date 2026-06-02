@@ -1,0 +1,42 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: multi-cluster-chaos
+  namespace: hello-world-app
+spec:
+  appinfo:
+    appns: hello-world-app
+    applabel: "app=flask-app"
+    appkind: deployment
+  annotationCheck: "false"
+  engineState: "active"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    - name: pod-delete
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "15"
+            - name: FORCE
+              value: "false"
+            - name: TARGET_CLUSTER
+              value: "primary"  # Options: primary, secondary, all
+            - name: CLUSTER_SELECTOR
+              value: "region=us-west-1"
+    - name: pod-network-latency
+      spec:
+        components:
+          env:
+            - name: NETWORK_LATENCY
+              value: "1000"
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "15"
+            - name: TARGET_CLUSTER
+              value: "secondary"
+            - name: CLUSTER_SELECTOR
+              value: "region=us-east-1" 

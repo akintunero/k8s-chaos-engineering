@@ -4,7 +4,7 @@ Unit tests for validation utilities
 
 import pytest
 
-from scripts.utils.validation import (
+from k8s_chaos.utils.validation import (
     validate_experiment_name,
     validate_namespace,
     sanitize_command,

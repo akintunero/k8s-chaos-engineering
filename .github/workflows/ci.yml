@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   workflow_dispatch:
 
 jobs:
@@ -17,9 +17,17 @@ jobs:
   security:
     uses: ./.github/workflows/security.yml
 
-  # All checks must pass
+  manifests:
+    uses: ./.github/workflows/manifests.yml
+
+  e2e-kind:
+    uses: ./.github/workflows/e2e-kind.yml
+
+  backend:
+    uses: ./.github/workflows/backend-ci.yml
+
   ci-success:
-    needs: [test, lint, security]
+    needs: [test, lint, security, manifests, e2e-kind, backend]
     runs-on: ubuntu-latest
     if: always()
     steps:
@@ -27,8 +35,11 @@ jobs:
         run: |
           if [ "${{ needs.test.result }}" != "success" ] || \
              [ "${{ needs.lint.result }}" != "success" ] || \
-             [ "${{ needs.security.result }}" != "success" ]; then
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.manifests.result }}" != "success" ] || \
+             [ "${{ needs.e2e-kind.result }}" != "success" ] || \
+             [ "${{ needs.backend.result }}" != "success" ]; then
             echo "One or more CI checks failed"
             exit 1
           fi
-          echo "All CI checks passed! ✅"
+          echo "All CI checks passed"

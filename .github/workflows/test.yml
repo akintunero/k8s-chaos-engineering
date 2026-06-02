@@ -18,7 +18,7 @@ jobs:
     - uses: actions/checkout@v4
     
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
         cache: 'pip'
@@ -34,16 +34,13 @@ jobs:
       working-directory: .
       run: |
         export PYTHONPATH=$PWD/scripts:$PYTHONPATH
-        pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=term-missing || true
+        pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=term-missing
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
       if: always()
       with:
         file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
         flags: unittests
         name: codecov-umbrella
         fail_ci_if_error: false

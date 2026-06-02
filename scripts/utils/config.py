@@ -40,7 +40,7 @@ class Config:
 
     # Paths
     experiments_dir: str = "experiments"
-    manifests_dir: str = "manifests"
+    manifests_dir: str = "examples/quickstart"
 
     # Kubernetes
     kubeconfig: Optional[str] = None

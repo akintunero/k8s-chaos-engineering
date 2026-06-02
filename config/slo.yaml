@@ -1,0 +1,11 @@
+# Default SLO evaluation settings (override via environment)
+
+prometheus:
+  url: ${PROMETHEUS_URL:-http://localhost:9090}
+  timeout_seconds: ${PROMETHEUS_TIMEOUT:-5}
+  enabled: ${PROMETHEUS_SLO_ENABLED:-false}
+
+reporting:
+  output_dir: ${REPORT_DIR:-reports}
+  include_prometheus: true
+  fail_on_optional_probe_error: false

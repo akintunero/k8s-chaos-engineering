@@ -1,0 +1,28 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    ":dependencyDashboard"
+  ],
+  "labels": ["dependencies"],
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "groupName": "github-actions",
+      "schedule": ["before 6am on monday"]
+    },
+    {
+      "matchManagers": ["pip_requirements"],
+      "matchPaths": ["scripts/**", "web/backend/**"],
+      "groupName": "python-dependencies"
+    },
+    {
+      "matchManagers": ["npm"],
+      "matchPaths": ["web/frontend/**"],
+      "enabled": false
+    }
+  ],
+  "vulnerabilityAlerts": {
+    "enabled": true
+  }
+}

@@ -1,132 +1,70 @@
-# Automation Scripts
+# Scripts directory
 
-This directory contains Python automation scripts to simplify the setup and management of the Kubernetes Chaos Engineering Framework.
+Legacy entrypoints and shims. **Preferred interface:** the `k8s-chaos` CLI from the installable package (`src/k8s_chaos/`).
 
-## Prerequisites
+## Install
 
-Install the required Python dependencies:
+From the repository root:
 
 ```bash
-pip install -r requirements.txt
+make install          # editable install + sync packaged YAML
+k8s-chaos doctor
+k8s-chaos list
 ```
 
-## Available Scripts
+See [CONTRIBUTING.md](../CONTRIBUTING.md) and [docs/pypi.md](../docs/pypi.md).
 
-### setup.py
+## Shims (backward compatible)
 
-Automates the complete setup of the chaos engineering environment.
+| File | Maps to |
+|------|---------|
+| `cli.py` | `k8s_chaos.cli` |
+| `chaos-runner.py` | `k8s_chaos.chaos_runner` |
+| `doctor.py` | `k8s_chaos.doctor` |
+| `gameday.py` | `k8s_chaos.gameday` |
+| `preflight.py` | `k8s_chaos.preflight` |
+| `abort.py` | `k8s_chaos.abort` |
+| `quickstart_report.py` | `k8s_chaos.quickstart_report` |
+| `setup.py` | Interactive Litmus/app/monitoring setup (still uses `scripts/utils` imports via shims) |
 
-**Features:**
-- Checks prerequisites (kubectl, helm, cluster connectivity)
-- Installs LitmusChaos
-- Deploys sample Flask application
-- Sets up Prometheus and Grafana monitoring
+Run the same commands via CLI:
 
-**Usage:**
 ```bash
-python scripts/setup.py
+k8s-chaos run pod-delete
+k8s-chaos abort
+k8s-chaos gameday quickstart
+k8s-chaos report pod-delete
 ```
 
-The script will prompt you to choose what to install:
-1. LitmusChaos only
-2. Sample application only
-3. Monitoring only
-4. Everything (recommended)
+## Dependencies
 
-### chaos-runner.py
+Python dependencies are defined in [pyproject.toml](../pyproject.toml). Install with `make install` or `pip install -e ".[dev]"`.
 
-Manages chaos experiments with a simple command-line interface.
+`requirements.txt` and `requirements-dev.txt` remain for CI paths that have not migrated to `pyproject.toml` yet.
 
-**Usage:**
-```bash
-# List available experiments
-python scripts/chaos-runner.py list
-
-# Run an experiment
-python scripts/chaos-runner.py run <experiment-name>
-
-# Check experiment status
-python scripts/chaos-runner.py status <experiment-name>
-
-# Stop an experiment
-python scripts/chaos-runner.py stop <experiment-name>
-
-# List running experiments
-python scripts/chaos-runner.py running
-
-# Clean up all experiments
-python scripts/chaos-runner.py cleanup
-```
-
-**Available Experiments:**
-- `pod-delete` - Deletes application pods to test resilience
-- `cpu-hog` - Simulates CPU stress on application pods
-- `disk-stress` - Simulates disk I/O stress
-- `network-latency` - Introduces network latency
-
-## Examples
-
-### Quick Setup
-```bash
-# Complete setup
-python scripts/setup.py
-
-# Run a pod delete experiment
-python scripts/chaos-runner.py run pod-delete
-
-# Check the status
-python scripts/chaos-runner.py status pod-delete
-
-# Stop the experiment
-python scripts/chaos-runner.py stop pod-delete
-```
-
-### Using Makefile
-The project also includes a Makefile for convenience:
+## Makefile shortcuts
 
 ```bash
-# Show all available commands
-make help
-
-# Run setup
-make setup
-
-# Run an experiment
+make quickstart
 make run-experiment EXPERIMENT=pod-delete
-
-# Stop an experiment
-make stop-experiment EXPERIMENT=pod-delete
-
-# List experiments
-make list-experiments
+make gameday GAMEDAY=quickstart
+make doctor
 ```
+
+Full list: `make help`.
 
 ## Troubleshooting
 
-### Common Issues
+```bash
+k8s-chaos doctor
+kubectl cluster-info
+kubectl get pods -n hello-world-app
+kubectl get pods -n litmus
+```
 
-1. **Permission Denied**: Make sure the scripts are executable:
-   ```bash
-   chmod +x scripts/*.py
-   ```
+If `pip install` resolves the package to `scripts/` instead of `src/`, remove stale metadata and reinstall:
 
-2. **Python Dependencies**: Install required packages:
-   ```bash
-   pip install -r scripts/requirements.txt
-   ```
-
-3. **Cluster Connection**: Ensure kubectl is configured:
-   ```bash
-   kubectl cluster-info
-   ```
-
-4. **Namespace Issues**: Make sure the hello-world-app namespace exists:
-   ```bash
-   kubectl apply -f manifests/namespace.yaml
-   ```
-
-### Logs and Debugging
-
-- Check experiment logs: `kubectl logs -n hello-world-app -l job-name`
-- Check application logs: `kubectl logs -n hello-world-app -l app=flask-app`
-- Check LitmusChaos logs: `kubectl logs -n litmus -l app.kubernetes.io/name=litmus` 
+```bash
+./hack/ensure-dev-install.sh
+pip install -e ".[dev]" --force-reinstall
+```

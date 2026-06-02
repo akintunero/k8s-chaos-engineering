@@ -1,65 +1,40 @@
 # Chaos Engineering Web UI
 
-Modern web dashboard for managing Kubernetes chaos engineering experiments.
+React + FastAPI dashboard for Litmus chaos experiments.
+
+> **Beta** — Docker Compose supported. See [EXPERIMENTAL.md](EXPERIMENTAL.md).
+
+## Quick start
+
+```bash
+make web-up    # from repository root
+```
 
 ## Features
 
-- 🎯 **Dashboard** - Overview of experiments and metrics
-- 🧪 **Experiment Management** - Run, stop, and monitor experiments
-- ⏰ **Scheduling** - Create and manage scheduled experiments
-- 📊 **Real-time Updates** - WebSocket-based live status updates
-- 🎨 **Modern UI** - Beautiful, responsive interface built with React and Tailwind CSS
+- List experiments (respects `CHAOS_ENV` profile)
+- Run / stop experiments
+- Schedule experiments (CronJob-based)
+- WebSocket status channel
+- Optional API key auth
 
-## Tech Stack
+## Configuration
 
-- **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS
-- **Backend**: FastAPI + WebSockets
-- **Charts**: Recharts
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHAOS_ENV` | `dev` | Blast-radius profile |
+| `CORS_ORIGINS` | `http://localhost:3000` | Allowed browser origins |
+| `CHAOS_API_KEY` | (empty) | If set, require `X-Api-Key` header |
+| `CHAOS_CONFIRM` | — | Required for `prod` profile |
 
-## Quick Start
+## API
 
-### Development
-
-1. **Start Backend**:
-```bash
-cd web/backend
-pip install -r requirements.txt
-python main.py
-```
-
-2. **Start Frontend**:
-```bash
-cd web/frontend
-npm install
-npm run dev
-```
-
-3. **Access UI**: http://localhost:3000
-
-### Docker
-
-```bash
-cd web
-docker-compose up
-```
-
-## API Endpoints
-
-- `GET /api/experiments` - List available experiments
-- `GET /api/experiments/running` - List running experiments
-- `POST /api/experiments/run` - Run an experiment
-- `POST /api/experiments/{name}/stop` - Stop an experiment
-- `GET /api/experiments/{name}/status` - Get experiment status
-- `GET /api/schedules` - List scheduled experiments
-- `POST /api/schedules` - Create a schedule
-- `DELETE /api/schedules/{name}` - Delete a schedule
-- `WS /ws` - WebSocket for real-time updates
-
-## Screenshots
-
-The UI includes:
-- Clean, modern design
-- Responsive layout
-- Real-time experiment status
-- Easy experiment management
-- Schedule management interface
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/healthz` | Health check (no auth) |
+| GET | `/api/experiments` | List experiments |
+| POST | `/api/experiments/run` | Start experiment |
+| POST | `/api/experiments/{name}/stop` | Stop experiment |
+| POST | `/api/abort` | Abort all engines in namespace |
+| GET | `/api/config` | Namespaces and env |
+| WS | `/ws` | WebSocket echo / events |

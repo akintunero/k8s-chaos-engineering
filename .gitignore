@@ -20,8 +20,8 @@ config/secrets.yaml
 kubeconfig
 *.kubeconfig
 
-# Data
-data/
+# Data (repo root only — keep src/k8s_chaos/data for wheels)
+/data/
 *.db
 *.sqlite
 *.sqlite3
@@ -124,7 +124,9 @@ __pycache__/
 # Distribution
 dist/
 build/
+k8s_chaos_engineering-*/
 *.egg-info/
+scripts/**/*.egg-info/
 
 # Virtual environments
 venv/

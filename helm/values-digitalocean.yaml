@@ -1,7 +1,7 @@
 # Digital Ocean specific configuration
 global:
   storageClass: do-block-storage
-  domain: your-domain.com  # Replace with your actual domain
+  domain: chaos.example.com  # Set to the public hostname for this deployment
 
 # MongoDB configuration
 mongodb:

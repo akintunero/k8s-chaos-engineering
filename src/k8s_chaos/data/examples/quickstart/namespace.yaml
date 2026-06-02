@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hello-world-app
+  labels:
+    name: hello-world-app
+    app.kubernetes.io/name: hello-world-app

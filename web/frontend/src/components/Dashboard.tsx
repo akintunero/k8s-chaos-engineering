@@ -32,7 +32,7 @@ export default function Dashboard() {
         totalExperiments: experiments.experiments?.length || 0,
         runningExperiments: running.running?.length || 0,
         scheduledExperiments: schedules.schedules?.length || 0,
-        successRate: 95 // Placeholder
+        successRate: 95 // Static demo metric until live experiment stats are wired
       })
 
       setRecentExperiments(running.running || [])
@@ -56,7 +56,7 @@ export default function Dashboard() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-2 text-sm text-gray-600">
-          Monitor and manage your chaos engineering experiments
+          Monitor and manage Litmus chaos experiments on the cluster
         </p>
       </div>
 

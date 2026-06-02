@@ -1,0 +1,88 @@
+apiVersion: litmuschaos.io/v1alpha1
+kind: ChaosEngine
+metadata:
+  name: comprehensive-chaos-workflow
+  namespace: hello-world-app
+spec:
+  appinfo:
+    appns: hello-world-app
+    applabel: "app=flask-app"
+    appkind: deployment
+  annotationCheck: "false"
+  engineState: "active"
+  chaosServiceAccount: litmus-admin
+  experiments:
+    # Phase 1: Basic Infrastructure Chaos
+    - name: pod-delete
+      spec:
+        components:
+          env:
+            - name: TOTAL_CHAOS_DURATION
+              value: "30"
+            - name: CHAOS_INTERVAL
+              value: "10"
+            - name: FORCE
+              value: "false"
+            - name: SEQUENCE
+              value: "parallel"
+    
+    # Phase 2: Resource Stress
+    - name: cpu-hog
+      spec:
+        components:
+          env:
+            - name: CPU_CORES
+              value: "1"
+            - name: TOTAL_CHAOS_DURATION
+              value: "45"
+            - name: CHAOS_INTERVAL
+              value: "15"
+            - name: CPU_LOAD
+              value: "80"
+            - name: SEQUENCE
+              value: "serial"
+    
+    - name: pod-memory-hog
+      spec:
+        components:
+          env:
+            - name: MEMORY_CONSUMPTION
+              value: "300"
+            - name: TOTAL_CHAOS_DURATION
+              value: "45"
+            - name: CHAOS_INTERVAL
+              value: "15"
+            - name: SEQUENCE
+              value: "serial"
+    
+    # Phase 3: Network Chaos
+    - name: pod-network-latency
+      spec:
+        components:
+          env:
+            - name: NETWORK_LATENCY
+              value: "1500"
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "20"
+            - name: NETWORK_JITTER
+              value: "200"
+            - name: SEQUENCE
+              value: "parallel"
+    
+    # Phase 4: Storage Chaos
+    - name: disk-stress
+      spec:
+        components:
+          env:
+            - name: DISK_FILL_PERCENTAGE
+              value: "70"
+            - name: TOTAL_CHAOS_DURATION
+              value: "60"
+            - name: CHAOS_INTERVAL
+              value: "20"
+            - name: DISK_IO_OPERATIONS
+              value: "500"
+            - name: SEQUENCE
+              value: "serial" 

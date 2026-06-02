@@ -158,8 +158,8 @@ class TemplateManager:
             logger.error(f"Failed to parse template YAML: {e}")
             return None
 
-        # Replace placeholders
-        experiment_yaml = self._replace_placeholders(
+        # Apply {{variable}} substitutions from the template
+        experiment_yaml = self._apply_template_variables(
             template_data,
             experiment_name=experiment_name,
             namespace=namespace or config.app_namespace,
@@ -177,26 +177,26 @@ class TemplateManager:
             logger.error(f"Failed to save experiment: {e}")
             return None
 
-    def _replace_placeholders(
+    def _apply_template_variables(
         self,
         data: Any,
         experiment_name: str,
         namespace: str,
         parameters: Dict[str, Any],
     ) -> Any:
-        """Recursively replace placeholders in YAML data"""
+        """Recursively substitute {{name}} variables in YAML data."""
         if isinstance(data, dict):
             return {
-                k: self._replace_placeholders(v, experiment_name, namespace, parameters)
+                k: self._apply_template_variables(v, experiment_name, namespace, parameters)
                 for k, v in data.items()
             }
         elif isinstance(data, list):
             return [
-                self._replace_placeholders(item, experiment_name, namespace, parameters)
+                self._apply_template_variables(item, experiment_name, namespace, parameters)
                 for item in data
             ]
         elif isinstance(data, str):
-            # Replace placeholders
+            # Substitute {{experiment_name}}, {{namespace}}, and parameter keys
             data = data.replace("{{experiment_name}}", experiment_name)
             data = data.replace("{{namespace}}", namespace)
             for key, value in parameters.items():

@@ -8,7 +8,7 @@ import tempfile
 from pathlib import Path
 from unittest.mock import patch
 
-from scripts.utils.config import Config, load_config
+from k8s_chaos.utils.config import Config, load_config
 
 
 class TestConfig:

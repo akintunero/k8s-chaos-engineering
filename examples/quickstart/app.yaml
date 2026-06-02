@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: flask-app
+  namespace: hello-world-app
+  labels:
+    app: flask-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: flask-app
+  template:
+    metadata:
+      labels:
+        app: flask-app
+    spec:
+      containers:
+        - name: flask-app
+          image: nginx:alpine
+          ports:
+            - containerPort: 80
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          volumeMounts:
+            - name: app-code
+              mountPath: /usr/share/nginx/html
+      volumes:
+        - name: app-code
+          configMap:
+            name: flask-app-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: flask-app-config
+  namespace: hello-world-app
+data:
+  index.html: |
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="utf-8" />
+      <title>Chaos Quickstart App</title>
+      <style>
+        body { font-family: system-ui, sans-serif; margin: 2rem; }
+        .ok { background: #d4edda; color: #155724; padding: 0.75rem; border-radius: 6px; }
+      </style>
+    </head>
+    <body>
+      <h1>Chaos Engineering Quickstart</h1>
+      <p class="ok">Application is running.</p>
+    </body>
+    </html>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: flask-app-service
+  namespace: hello-world-app
+  labels:
+    app: flask-app
+spec:
+  selector:
+    app: flask-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+  type: ClusterIP

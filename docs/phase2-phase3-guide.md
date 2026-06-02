@@ -1,8 +1,11 @@
-# Phase 2 & 3: Advanced Chaos Engineering Guide
+# Experiment catalog guide (legacy)
+
+> **Superseded by:** [experiments/catalog.yaml](../experiments/catalog.yaml), [`k8s-chaos list`](../CONTRIBUTING.md), [docs/gameday.md](gameday.md), and [docs/safety.md](safety.md).  
+> This document is kept for step-by-step experiment commands; prefer the golden path (`make quickstart`) for new users.
 
 ## Overview
 
-This guide covers the implementation of Phase 2 (Basic Chaos Experiments) and Phase 3 (Advanced Chaos Experiments) of the Kubernetes Chaos Engineering Framework.
+This guide documents basic and advanced LitmusChaos experiments shipped in this repository.
 
 ## Phase 2: Basic Chaos Experiments
 

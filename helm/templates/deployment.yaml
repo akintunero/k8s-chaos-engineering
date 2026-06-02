@@ -18,9 +18,18 @@ spec:
         runAsUser: {{ .Values.securityContext.runAsUser }}
         runAsGroup: {{ .Values.securityContext.runAsGroup }}
         fsGroup: {{ .Values.securityContext.fsGroup }}
-      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
-      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
-      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
@@ -35,18 +44,18 @@ spec:
           - name: ERROR_RATE
             value: "{{ .Values.env.ERROR_RATE }}"
           - name: PORT
-            value: "{{ .Values.service.port | quote }}"
+            value: {{ .Values.service.port | quote }}
           - name: DEBUG
             value: "{{ .Values.env.DEBUG }}"
         livenessProbe:
           httpGet:
-            path: /healthz
+            path: /
             port: {{ .Values.service.port }}
           initialDelaySeconds: 5
           periodSeconds: 10
         readinessProbe:
           httpGet:
-            path: /healthz
+            path: /
             port: {{ .Values.service.port }}
           initialDelaySeconds: 5
           periodSeconds: 10

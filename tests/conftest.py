@@ -7,16 +7,17 @@ import os
 from unittest.mock import Mock, MagicMock, patch
 from pathlib import Path
 
-# Add scripts directory to path
+# Ensure src layout is importable without editable install
 import sys
-scripts_dir = Path(__file__).parent.parent / "scripts"
-sys.path.insert(0, str(scripts_dir))
+root = Path(__file__).parent.parent
+sys.path.insert(0, str(root / "src"))
+sys.path.insert(0, str(root / "scripts"))
 
 
 @pytest.fixture
 def mock_config():
     """Mock configuration"""
-    from scripts.utils.config import Config
+    from k8s_chaos.utils.config import Config
     
     return Config(
         app_namespace="test-app",
@@ -32,7 +33,7 @@ def mock_config():
 @pytest.fixture
 def mock_run_command():
     """Mock run_command function"""
-    with patch('scripts.utils.k8s.run_command') as mock:
+    with patch('k8s_chaos.utils.k8s.run_command') as mock:
         yield mock
 
 

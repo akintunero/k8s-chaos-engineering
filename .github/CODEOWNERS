@@ -1,0 +1,8 @@
+# Default owners for review
+* @akintunero
+
+/examples/quickstart/ @akintunero
+/experiments/ @akintunero
+/scripts/ @akintunero
+/.github/ @akintunero
+/hack/ @akintunero

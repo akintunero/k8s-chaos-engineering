@@ -2,47 +2,46 @@ name: Lint and Code Quality
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
-  workflow_call:  # Allow this workflow to be called by other workflows
+    branches: [main, develop]
+  workflow_call:
 
 jobs:
   lint:
     runs-on: ubuntu-latest
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-        cache: 'pip'
-    
-    - name: Install dependencies
-      working-directory: scripts
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements-dev.txt
-    
-    - name: Run isort (import sorting check)
-      working-directory: scripts
-      run: |
-        isort --check-only --diff --profile black . || true
-    
-    - name: Run black (code formatting check)
-      working-directory: scripts
-      run: |
-        black --check --diff .
-    
-    - name: Run flake8 (linting)
-      working-directory: scripts
-      run: |
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
-    - name: Run mypy (type checking)
-      working-directory: scripts
-      run: |
-        mypy . --ignore-missing-imports || true
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: scripts/requirements-dev.txt
+
+      - name: Install dependencies
+        working-directory: scripts
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-dev.txt
+
+      - name: Run isort
+        working-directory: scripts
+        run: isort --check-only --profile black .
+
+      - name: Run black
+        working-directory: scripts
+        run: black --check .
+
+      - name: Run flake8
+        working-directory: scripts
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Run mypy
+        working-directory: scripts
+        continue-on-error: true
+        run: mypy . --ignore-missing-imports

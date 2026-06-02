@@ -1,0 +1,39 @@
+name: resilience-basics
+description: Core resilience GameDay — baseline, pod-delete, cooldown, network latency
+namespace: hello-world-app
+deployment: flask-app
+expected_replicas: 3
+default_recovery_timeout_seconds: 120
+
+steps:
+  - id: baseline
+    type: probe
+    description: Steady-state check
+    probes:
+      - name: deployment_baseline
+        type: deployment_ready
+        min_ready_replicas: 3
+        max_recovery_seconds: 30
+
+  - id: pod-delete
+    type: experiment
+    description: Pod failure recovery
+    experiment: pod-delete
+    chaos_wait_seconds: 45
+    recovery_timeout_seconds: 90
+    cleanup: true
+
+  - id: cooldown
+    type: wait
+    description: Allow cluster to stabilize
+    seconds: 20
+
+  - id: network-latency
+    type: experiment
+    description: Network degradation under load
+    experiment: network-latency
+    chaos_wait_seconds: 60
+    recovery_timeout_seconds: 120
+    cleanup: true
+    skip_if_chaos_env:
+      - prod

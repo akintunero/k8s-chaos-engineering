@@ -1,274 +1,236 @@
+# Kubernetes Chaos Engineering (Litmus quickstart kit)
 
-# **Kubernetes Chaos Engineering Framework**  
+[![CI](https://github.com/akintunero/k8s-chaos-engineering/actions/workflows/ci.yml/badge.svg)](https://github.com/akintunero/k8s-chaos-engineering/actions/workflows/ci.yml)
+[![License](https://img.shields.io/github/license/akintunero/k8s-chaos-engineering)](LICENSE)
+[![LitmusChaos](https://img.shields.io/badge/LitmusChaos-experiments-orange)](https://litmuschaos.io)
 
-![Chaos Engineering](https://img.shields.io/badge/Chaos%20Engineering-Kubernetes-blue?style=for-the-badge)  
-![LitmusChaos](https://img.shields.io/badge/LitmusChaos-Experimenting-orange?style=for-the-badge)  
-![License](https://img.shields.io/github/license/akintunero/k8s-chaos-engineering?style=for-the-badge)  
-![Contributions](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge)  
+**Curated LitmusChaos experiments, guardrails, and automation** for teams who want a working chaos smoke test on Kubernetes—not another control plane.
 
-##  Overview  
-The **Kubernetes Chaos Engineering Framework** helps teams **test, analyze, and improve resilience** of Kubernetes applications by injecting controlled failures using **LitmusChaos**.  
-
-With this framework, you can simulate failures like **pod crashes, network delays, CPU stress, and more**, ensuring that your cloud-native applications are **fault-tolerant and highly available**.  
+> Clone → one command → pod-delete experiment → **PASS/FAIL report** in ~15 minutes.
 
 ---
 
-## **🎯 Features**  
-✅ **Phase 1: Core Infrastructure** - Basic Kubernetes setup with LitmusChaos  
-✅ **Phase 2: Basic Chaos Experiments** - Pod Delete, CPU Stress, Memory Stress, Network Latency  
-✅ **Phase 3: Advanced Chaos Experiments** - Network Partition, Disk I/O Stress, Custom Experiments, Multi-cluster  
-✅ **Comprehensive Chaos Workflows** - Multi-experiment orchestration  
-✅ **Advanced Monitoring** - Custom Grafana dashboards and Prometheus alerts  
-✅ **Automated Experiment Management** - Python scripts for easy operation  
-✅ **Extensible Architecture** - Plugin system for custom experiments  
+## What this project is
+
+| You get | You do not get |
+|--------|----------------|
+| Ready-to-run `ChaosEngine` manifests | A replacement for [Litmus](https://litmuschaos.io) |
+| Python CLI (`chaos-runner`, reports, scheduler) | Managed SaaS chaos |
+| Quickstart app + RBAC golden path | Production AI-driven chaos (see `chaos/` — experimental) |
+| CI-friendly GitHub Action | Full multi-cloud operator |
+
+Built on **LitmusChaos**. We add opinionated templates, quickstart automation, and reporting.
 
 ---
 
-## **📥 Clone This Project**  
-To set up the project locally, run:  
-```sh
+## Quickstart (recommended)
+
+**Prerequisites:** Kubernetes cluster, `kubectl`, `helm`, `python3` 3.9+. See [docs/version-matrix.md](docs/version-matrix.md).
+
+```bash
+# After the first PyPI release (see docs/pypi.md):
+pip install k8s-chaos-engineering
+k8s-chaos doctor
+
+# From source (works before PyPI publish):
 git clone https://github.com/akintunero/k8s-chaos-engineering.git
-cd k8s-chaos-engineering
+cd k8s-chaos-engineering && make install
+k8s-chaos doctor
+
+make quickstart
+```
+
+The Python package ships manifests and automation only; **`kubectl` and `helm` must be installed separately**. Cluster commands fail fast with install hints if they are missing.
+
+Publishing, local wheels, and pre-release checks: [docs/pypi.md](docs/pypi.md) (`make pypi-ready`).
+
+This will:
+
+1. Verify tools and cluster connectivity (`doctor`)
+2. Install LitmusChaos (if missing)
+3. Deploy the sample app from `examples/quickstart/`
+4. Run the **pod-delete** experiment
+5. Write `reports/latest.json` with a **PASS/FAIL** verdict
+
+**Options:**
+
+```bash
+SKIP_LITMUS=1 make quickstart    # cluster already has Litmus
+SKIP_CHAOS=1 make quickstart     # deploy app only
+./hack/quickstart.sh             # same as make quickstart
 ```
 
 ---
 
-## **🛠️ Prerequisites**  
-Ensure the following are installed on your system:  
-- ✅ Kubernetes Cluster (Minikube, Kind, or cloud-based cluster)  
-- ✅ kubectl (Kubernetes CLI)  
-- ✅ Helm (v3+)  
-- ✅ LitmusChaos (Installed in the cluster)  
+## Manual steps
 
----
+### Install LitmusChaos
 
-## **🚀 Getting Started**  
-
-### **1️⃣ Install LitmusChaos**  
-If LitmusChaos is not installed, deploy it using Helm:  
-```sh
-helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/
-helm repo update
-helm install litmus litmuschaos/litmus --namespace litmus --create-namespace
-```
-
-Verify installation:  
-```sh
+```bash
+make install-litmus
 kubectl get pods -n litmus
 ```
 
----
+### Deploy the sample application
 
-### **2️⃣ Deploy a Sample Application**  
-To test chaos, deploy a simple **Flask App**:  
-```sh
-kubectl apply -f manifests/flask-app.yaml
+```bash
+make deploy-app
+kubectl get pods -n hello-world-app -l app=flask-app
 ```
 
-Check if the app is running:  
-```sh
-kubectl get pods -n hello-world-app
+### Run an experiment
+
+```bash
+make run-experiment EXPERIMENT=pod-delete
+make quickstart-report EXPERIMENT=pod-delete
 ```
 
-**Alternative: Use the automated setup script:**
-```sh
-python scripts/setup.py
-```
+### Stop an experiment
 
----
-
-### **3️⃣ Running a Chaos Experiment (Pod Delete)**  
-Apply the `pod-delete.yaml` chaos experiment:  
-```sh
-kubectl apply -f experiments/pod-delete.yaml
-```
-
-Check the **ChaosEngine status**:  
-```sh
-kubectl get chaosengine pod-delete -n hello-world-app -o jsonpath='{.status.engineStatus}'
-```
-
-Check the logs for any running chaos pods:  
-```sh
-kubectl get pods -n hello-world-app
+```bash
+make stop-experiment EXPERIMENT=pod-delete
 ```
 
 ---
 
-### **4️⃣ Stopping a Chaos Experiment**  
-To stop a running chaos experiment:  
-```sh
-kubectl patch chaosengine pod-delete -n hello-world-app --type='merge' -p '{"spec":{"engineState":"stop"}}'
-```
+## Experiment catalog
 
-To completely delete it:  
-```sh
-kubectl delete chaosengine pod-delete -n hello-world-app
-```
+| Phase | Experiments |
+|-------|-------------|
+| 2 | `pod-delete`, `cpu-hog`, `memory-hog`, `network-latency` |
+| 3 | `network-partition`, `disk-stress`, `custom-chaos`, `multi-cluster-chaos` |
 
----
+Metadata: [`experiments/catalog.yaml`](experiments/catalog.yaml)
 
-## **📊 Monitoring Chaos Experiments**  
-To monitor and visualize chaos tests:  
-
-1️⃣ **Install Prometheus & Grafana** using Helm:  
-```sh
-helm install monitoring prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace
-```
-
-2️⃣ **Access Grafana Dashboard**  
-```sh
-kubectl port-forward svc/monitoring-grafana -n monitoring 3000:80
-```
-
-3️⃣ Open `http://localhost:3000`, login with `admin/admin`, and import LitmusChaos dashboards.
-
----
-
-## **🤖 Automation Scripts**
-
-The project includes Python automation scripts to simplify setup and management:
-
-### **Setup Script**
-```sh
-python scripts/setup.py
-```
-This script automates the entire setup process including:
-- Prerequisites checking
-- LitmusChaos installation
-- Sample application deployment
-- Monitoring setup
-
-### **Chaos Runner Script**
-```sh
-python scripts/chaos-runner.py list                    # List available experiments
-python scripts/chaos-runner.py run pod-delete          # Run an experiment
-python scripts/chaos-runner.py status pod-delete       # Check experiment status
-python scripts/chaos-runner.py stop pod-delete         # Stop an experiment
-python scripts/chaos-runner.py running                 # List running experiments
-python scripts/chaos-runner.py cleanup                 # Clean up all experiments
-```
-
-### **Advanced Chaos Runner Script (Phase 2 & 3)**
-```sh
-python scripts/advanced-chaos-runner.py list           # List experiments by phase
-python scripts/advanced-chaos-runner.py phase2         # Run all Phase 2 experiments
-python scripts/advanced-chaos-runner.py phase3         # Run all Phase 3 experiments
-python scripts/advanced-chaos-runner.py workflow       # Run comprehensive workflow
-python scripts/advanced-chaos-runner.py report         # Generate experiment report
-python scripts/advanced-chaos-runner.py run --experiment network-partition  # Run specific experiment
+```bash
+make list-experiments
+python3 scripts/advanced-chaos-runner.py list
 ```
 
 ---
 
-## **🎯 Phase 2 & 3: Advanced Chaos Experiments**
+## Automation
 
-### **Phase 2: Basic Chaos Experiments**
-These experiments test fundamental resilience patterns:
-
-- **Pod Delete** - Tests application recovery from pod failures
-- **CPU Stress** - Simulates high CPU load scenarios
-- **Memory Stress** - Tests memory pressure handling
-- **Network Latency** - Introduces network delays
-
-### **Phase 3: Advanced Chaos Experiments**
-These experiments test complex failure scenarios:
-
-- **Network Partition** - Simulates network isolation
-- **Disk I/O Stress** - Tests storage performance under load
-- **Custom Chaos** - Multi-experiment orchestration
-- **Multi-cluster Chaos** - Cross-cluster failure testing
-
-### **Comprehensive Workflow**
-Run multiple experiments in sequence:
-```sh
-python scripts/advanced-chaos-runner.py workflow
+```bash
+make doctor              # kubectl, helm, cluster
+make list-experiments
+make run-experiment EXPERIMENT=cpu-hog
+make cleanup
 ```
 
-### **Experiment Reports**
-Generate detailed reports of chaos experiments:
-```sh
-python scripts/advanced-chaos-runner.py report
+Interactive setup (Litmus + app + optional monitoring):
+
+```bash
+make setup
 ```
 
 ---
 
-## **📜 Customizing Chaos Experiments**  
-Modify the `experiments/` YAML files to create custom scenarios.  
+## CI & GitOps
 
-Example: **CPU Stress Test**
+| Capability | Location |
+|------------|----------|
+| Main CI (tests, lint, security, manifests, KinD e2e) | [`.github/workflows/ci.yml`](.github/workflows/ci.yml) |
+| Manifest validation (Helm + kubeconform) | `make validate-manifests` |
+| KinD e2e quickstart | [`.github/workflows/e2e-kind.yml`](.github/workflows/e2e-kind.yml) |
+| Chaos smoke test Action | [`.github/actions/chaos-test`](.github/actions/chaos-test) |
+| Releases + SBOM | Tag `v*.*.*` → [release workflow](.github/workflows/release.yml) |
+| Argo CD / Flux examples | [`examples/gitops/`](examples/gitops/) · [docs/gitops.md](docs/gitops.md) |
+
 ```yaml
-apiVersion: litmuschaos.io/v1alpha1
-kind: ChaosEngine
-metadata:
-  name: cpu-stress
-  namespace: hello-world-app
-spec:
-  appinfo:
-    appns: hello-world-app
-    applabel: "app=flask-app"
-    appkind: deployment
-  annotationCheck: "false"
-  engineState: "active"
-  chaosServiceAccount: litmus-admin
-  experiments:
-    - name: pod-cpu-hog
-      spec:
-        components:
-          env:
-            - name: CPU_CORES
-              value: "2"
-            - name: TOTAL_CHAOS_DURATION
-              value: "60"
-```
-Apply it:  
-```sh
-kubectl apply -f experiments/cpu-stress.yaml
+# Example: chaos regression in a GitHub Actions workflow (cluster required)
+- uses: ./.github/actions/chaos-test
+  with:
+    experiment: pod-delete
 ```
 
 ---
 
-## **📜 Project Structure**  
+## Safety (blast-radius)
+
+```bash
+export CHAOS_ENV=dev          # dev | staging | prod
+make preflight                # cluster, Litmus, app, no active chaos
+make run-experiment EXPERIMENT=pod-delete
+make abort                    # emergency stop
+```
+
+Profiles: [`config/blast-radius.yaml`](config/blast-radius.yaml) · [docs/safety.md](docs/safety.md)
+
+## Integrations & multi-cluster
+
+```bash
+pip install -e .
+k8s-chaos gameday quickstart
+k8s-chaos clusters local --experiment pod-delete
+```
+
+- [docs/integrations.md](docs/integrations.md) — CLI, Action v2, API v1  
+- [docs/multicluster.md](docs/multicluster.md) — cluster registry  
+
+## GameDay & SLO reports
+
+```bash
+make gameday GAMEDAY=quickstart     # ordered steps + PASS/FAIL per step
+make slo-report EXPERIMENT=pod-delete
+```
+
+- [docs/gameday.md](docs/gameday.md) — workflow orchestration  
+- [docs/slo-reporting.md](docs/slo-reporting.md) — probes, Prometheus, hypotheses  
+
+## Web UI (beta)
+
+```bash
+make web-up    # Docker Compose — http://localhost:3000
+```
+
+See [`web/README.md`](web/README.md).
+
+---
+
+## Project layout
+
 ```
 k8s-chaos-engineering/
-│── manifests/            # Sample Kubernetes application manifests
-│── experiments/          # YAML files defining chaos experiments
-│── helm/                 # Helm charts for easy deployment
-│── monitoring/           # Grafana dashboards & Prometheus alerts
-│── scripts/              # Python automation scripts
-│── deployments/          # Additional deployment configurations
-│── hello-world-app/      # Sample Flask application source code
-│── chaos/                # Chaos engineering configurations
-│── docs/                 # Project documentation
-│── README.md             # Project documentation
-│── LICENSE               # License file
+├── examples/quickstart/   # Golden path manifests (use this)
+├── experiments/           # Litmus ChaosEngine YAML + catalog.yaml
+├── examples/gitops/       # Argo CD & Flux samples
+├── src/k8s_chaos/         # Python package (k8s-chaos CLI)
+├── scripts/               # backward-compatible shims
+├── hack/quickstart.sh     # One-command golden path
+├── helm/                  # Optional demo chart
+├── monitoring/            # Prometheus/Grafana extras
+├── manifests/             # Legacy (see manifests/README.md)
+├── deployments/           # Legacy snippets (see deployments/README.md)
+├── web/                   # Experimental UI
+└── docs/                  # Architecture, version matrix, guides
 ```
 
 ---
 
-## **📜 Future Enhancements**  
-🔹 Add **network latency & disk stress** chaos tests  
-🔹 Integrate with **Slack alerts** for failure notifications  
-🔹 Provide **Web UI Dashboard** for chaos testing  
-🔹 Add **automated chaos testing pipelines**  
-🔹 Implement **chaos experiment scheduling**  
+## Roadmap
+
+Shipped capabilities and planned work are tracked in [ROADMAP.md](ROADMAP.md).
 
 ---
 
-## **📄 License**  
-This project is licensed under the **Apache-2.0 License**. See [LICENSE](LICENSE) for more details.
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Please run `make doctor` and tests before opening a PR.
 
 ---
 
-## **🙌 Contributing**  
-We welcome contributions! Follow these steps:  
+## Contact
 
-1️⃣ **Fork the repository**  
-2️⃣ **Create a new branch**: `feature-branch`  
-3️⃣ **Commit changes** & push to your branch  
-4️⃣ **Open a Pull Request** 🚀  
+| | |
+|---|---|
+| **Maintainer** | Olúmáyòwá Akinkuehinmi ([@akintunero](https://github.com/akintunero)) |
+| **Email** | [akintunero101@gmail.com](mailto:akintunero101@gmail.com) |
 
----
-
+Governance: [MAINTAINERS.md](MAINTAINERS.md) · [GOVERNANCE.md](GOVERNANCE.md) · Security: [SECURITY.md](SECURITY.md)
 
 ---
+
+## License
+
+Apache-2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).

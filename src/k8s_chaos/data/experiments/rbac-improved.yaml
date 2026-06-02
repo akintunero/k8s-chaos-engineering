@@ -1,0 +1,106 @@
+# Improved RBAC configuration with least privilege principle
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: litmus-admin
+  namespace: hello-world-app
+  labels:
+    app: litmus
+    component: chaos-operator
+
+---
+# Role with minimal required permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: litmus-admin
+  namespace: hello-world-app
+  labels:
+    app: litmus
+    component: chaos-operator
+rules:
+# Pod operations (required for pod-delete, pod-cpu-hog, etc.)
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+# Pod exec (required for some chaos experiments)
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
+# Pod logs (for debugging)
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get", "list"]
+# Events (for monitoring)
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+# ConfigMaps and Secrets (for experiment configuration)
+- apiGroups: [""]
+  resources: ["configmaps", "secrets"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+# Service operations (for network chaos)
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["get", "list", "watch"]
+
+---
+# ClusterRole for cluster-wide resources (only if needed)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: litmus-admin-cluster
+  labels:
+    app: litmus
+    component: chaos-operator
+rules:
+# Nodes (for node-level chaos - use with caution)
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list", "watch"]
+# PersistentVolumes (for disk chaos)
+- apiGroups: [""]
+  resources: ["persistentvolumes"]
+  verbs: ["get", "list", "watch"]
+# Storage classes
+- apiGroups: ["storage.k8s.io"]
+  resources: ["storageclasses"]
+  verbs: ["get", "list", "watch"]
+
+---
+# RoleBinding for namespace-scoped permissions
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: litmus-admin
+  namespace: hello-world-app
+  labels:
+    app: litmus
+    component: chaos-operator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: litmus-admin
+subjects:
+- kind: ServiceAccount
+  name: litmus-admin
+  namespace: hello-world-app
+
+---
+# ClusterRoleBinding (only if cluster-wide permissions needed)
+# Uncomment only if you need cluster-wide chaos experiments
+# apiVersion: rbac.authorization.k8s.io/v1
+# kind: ClusterRoleBinding
+# metadata:
+#   name: litmus-admin-cluster
+#   labels:
+#     app: litmus
+#     component: chaos-operator
+# roleRef:
+#   apiGroup: rbac.authorization.k8s.io
+#   kind: ClusterRole
+#   name: litmus-admin-cluster
+# subjects:
+# - kind: ServiceAccount
+#   name: litmus-admin
+#   namespace: hello-world-app

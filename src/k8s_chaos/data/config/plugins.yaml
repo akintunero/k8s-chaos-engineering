@@ -1,0 +1,7 @@
+# Optional custom experiment plugins
+plugins:
+  - name: log-stress-demo
+    module: plugins.log_stress_demo
+    function: generate_manifest
+    enabled: false
+    description: Example plugin — generates a pod-delete variant manifest

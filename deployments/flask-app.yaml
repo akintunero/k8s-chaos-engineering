@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: flask-app
-        image: your-dockerhub-username/flask-app:v1  # Use your custom Flask image
+        image: akintunero/flask-chaos-demo:latest
         command: ["python"]
         args: ["-m", "flask", "run"]
         ports:

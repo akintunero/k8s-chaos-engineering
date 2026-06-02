@@ -1,0 +1,68 @@
+name: Manifest validation
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_call:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install kubeconform
+        run: |
+          curl -sSL "https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz" \
+            | tar xz -C /tmp
+          sudo mv /tmp/kubeconform /usr/local/bin/kubeconform
+          kubeconform -v
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.4
+
+      - name: Install kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Python dependencies
+        run: python -m pip install -r scripts/requirements.txt
+
+      - name: Validate manifests (script)
+        run: chmod +x hack/validate-manifests.sh && ./hack/validate-manifests.sh
+
+      - name: Helm lint
+        run: helm lint helm/
+
+      - name: Kustomize build quickstart
+        run: kubectl kustomize examples/quickstart > /tmp/quickstart.yaml
+
+      - name: Kubeconform quickstart (Kubernetes schemas)
+        run: |
+          kubeconform -summary -kubernetes-version 1.28.0 \
+            -ignore-missing-schemas \
+            /tmp/quickstart.yaml
+
+      - name: Kubeconform experiments (Litmus CRDs catalog)
+        run: |
+          shopt -s nullglob
+          for f in experiments/*.yaml; do
+            base=$(basename "$f")
+            if [[ "$base" == "rbac.yaml" ]] || [[ "$base" == "catalog.yaml" ]]; then
+              continue
+            fi
+            echo "Validating $f"
+            kubeconform -summary -kubernetes-version 1.28.0 \
+              -ignore-missing-schemas \
+              -schema-location default \
+              -schema-location "https://raw.githubusercontent.com/datreeio/CRDs-catalog/main/{{.Group}}/{{.ResourceKind}}_{{.ResourceAPIVersion}}.json" \
+              "$f"
+          done

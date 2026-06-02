@@ -1,0 +1,37 @@
+# Example: chaos smoke test using the composite action (reference for downstream repositories).
+name: Example Chaos Smoke
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "examples/quickstart/**"
+      - "experiments/**"
+      - "workflows/gameday/**"
+
+jobs:
+  chaos-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Chaos experiment smoke (requires cluster + Litmus in real use)
+        uses: ./.github/actions/chaos-test
+        with:
+          mode: experiment
+          experiment: pod-delete
+          chaos-env: dev
+          upload-report: "true"
+
+  gameday-smoke:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: GameDay smoke
+        uses: ./.github/actions/chaos-test
+        with:
+          mode: gameday
+          gameday: quickstart
+          chaos-env: dev

@@ -1,0 +1,32 @@
+name: Bug report
+description: Something failed in quickstart, experiments, or CI
+title: "[bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. Include output from `make doctor` if possible.
+  - type: textarea
+    id: description
+    attributes:
+      label: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: "make quickstart"
+    validations:
+      required: true
+  - type: input
+    id: k8s-version
+    attributes:
+      label: Kubernetes version
+      placeholder: "kubectl version"
+  - type: input
+    id: cluster
+    attributes:
+      label: Cluster provider
+      placeholder: "kind, minikube, EKS, ..."

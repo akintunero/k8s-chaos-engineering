@@ -1,61 +1,67 @@
-# Project Roadmap
+# Project roadmap
 
-## Q1 2025
+## Project milestones
 
-### Phase 1: Core Infrastructure
-- [x] Set up basic Kubernetes cluster with Minikube
-- [x] Deploy LitmusChaos platform
-- [x] Configure MongoDB for data persistence
-- [x] Set up basic monitoring and logging
+| Milestone | Focus | Status |
+|-----------|--------|--------|
+| **1** | Truth and cleanup — README, Helm values, golden manifests, legacy docs | Done |
+| **2** | Golden path — `make quickstart`, catalog, PASS/FAIL report, version matrix | Done |
+| **3** | OSS hardening — governance, releases, SBOM, strict CI, Renovate | Done |
+| **4** | Cloud-native CI and GitOps — KinD e2e, manifest validation, Argo CD and Flux examples | Done |
+| **5** | Web UI — Docker Compose, API auth hooks, backend CI | Done |
 
-### Phase 2: Basic Chaos Experiments
-- [x] Implement pod deletion experiments
-- [x] Add network latency experiments
-- [x] Create CPU stress experiments
-- [x] Develop memory stress experiments
+## Product milestones
 
-## Q3 2025
+| Milestone | Focus | Status |
+|-----------|--------|--------|
+| **6** | Safety and governance — blast-radius profiles, preflight, abort | Done |
+| **7** | GameDay orchestration — workflows with pass/fail criteria | Done |
+| **8** | SLO-linked reports — Prometheus probes, hypothesis registry | Done |
+| **9** | Integrations — CLI package, Action v2, API v1, plugins, notifications | Done |
+| **10** | Multi-cluster (guarded) — cluster registry, fan-out runner | Done |
+| **11** | AI and recommendations (rules-first) | Planned |
 
-### Phase 3: Advanced Chaos Experiments
-- [x] Implement network partition experiments
-- [x] Add disk I/O stress experiments
-- [x] Create custom chaos experiments
-- [x] Develop multi-cluster chaos experiments
+## Shipped: integrations and multi-cluster
 
-### Phase 4: Monitoring and Analytics
-- [x] Set up Prometheus monitoring
-- [x] Add Grafana dashboards
-- [x] Implement chaos experiment analytics
-- [x] Create custom metrics and alerts
+- `pyproject.toml` + `k8s-chaos` CLI (`make install` / `pip install k8s-chaos-engineering`)
+- Action v2: experiment and GameDay modes, report artifact upload
+- API `/api/v1/*` — [docs/integrations.md](docs/integrations.md)
+- Plugin registry: `config/plugins.yaml` — [docs/plugins.md](docs/plugins.md)
+- Multi-cluster: `config/clusters.yaml`, `k8s-chaos clusters` — [docs/multicluster.md](docs/multicluster.md)
 
-## Q4 2025
+## Shipped: GameDay and SLO reporting
 
-### Phase 5: Integration and Extensibility
-- [ ] Add support for more cloud providers
-- [ ] Implement CI/CD integration
-- [ ] Create plugin system for custom experiments
-- [ ] Develop API for external integrations
+- `k8s-chaos gameday`, `workflows/gameday/quickstart.yaml`, `resilience-basics.yaml`
+- `k8s_chaos.utils.slo` — deployment, pod ratio, optional Prometheus probes
+- `k8s-chaos report` with SLO probe section in JSON reports
+- Docs: [docs/gameday.md](docs/gameday.md), [docs/slo-reporting.md](docs/slo-reporting.md)
 
-### Phase 6: Documentation and Community
-- [ ] Complete API documentation
-- [ ] Create user guides and tutorials
-- [ ] Set up community forums
-- [ ] Organize community events
+## Shipped: web UI and safety
 
-## Future Plans
+- Web: `web/backend/Dockerfile`, `web/frontend/Dockerfile`, `docker compose`, optional `CHAOS_API_KEY`
+- Safety: `config/blast-radius.yaml`, `k8s-chaos preflight`, `k8s-chaos abort`
+- Docs: [docs/safety.md](docs/safety.md)
 
-### 2026
-- [ ] Multi-cloud chaos experiments
-- [ ] AI-powered chaos experiment recommendations
-- [ ] Automated chaos experiment generation
-- [ ] Enhanced security features
+## Shipped: OSS and GitOps
 
-### Community Goals
-- Reach 1000 GitHub stars
-- Have 50+ active contributors
-- Host monthly community calls
-- Organize chaos engineering workshops
+- [GOVERNANCE.md](GOVERNANCE.md), [MAINTAINERS.md](MAINTAINERS.md), [ADOPTERS.md](ADOPTERS.md), [DCO.md](DCO.md)
+- Release workflow (Helm chart + SBOM on tag `v*.*.*`)
+- Weekly SBOM artifact workflow
+- Strict CI: manifests validation, KinD e2e, Bandit `-ll`
+- [examples/gitops/](examples/gitops/) + [docs/gitops.md](docs/gitops.md)
+- [renovate.json](renovate.json) for dependency updates
 
-## How to Contribute
+## Experiment catalog (complete)
 
-We welcome contributions to any of these areas! Check out our [Contributing Guide](CONTRIBUTING.md) to get started.
+- [x] Core infrastructure — Litmus, sample app, monitoring samples
+- [x] Basic experiments — pod delete, CPU, memory, network latency
+- [x] Advanced experiments — partition, disk, custom, multi-cluster
+- [x] Monitoring samples — Prometheus, Grafana, alerts
+
+Legacy experiment walkthrough: [docs/phase2-phase3-guide.md](docs/phase2-phase3-guide.md) (superseded by catalog + GameDay docs).
+
+## How to contribute
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Run `make doctor`, `make validate-manifests`, and `pytest tests/ -v` before opening a PR.
+
+Maintainer: **Olúmáyòwá Akinkuehinmi** — [akintunero101@gmail.com](mailto:akintunero101@gmail.com)
