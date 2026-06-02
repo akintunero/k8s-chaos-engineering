@@ -31,9 +31,9 @@ jobs:
       run: |
         if [ -f package-lock.json ]; then npm ci; else npm install; fi
     
-    - name: Run linter
+    - name: Typecheck
       working-directory: web/frontend
-      run: npm run lint || echo "Linter not configured, skipping"
+      run: npm run lint
     
     - name: Build
       working-directory: web/frontend

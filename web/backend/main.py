@@ -13,7 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
 from loader import load_chaos_modules
-from utils import get_config, get_logger
+
+from k8s_chaos.utils import get_config, get_logger
 
 try:
     from api_v1 import router as api_v1_router

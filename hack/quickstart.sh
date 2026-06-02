@@ -45,7 +45,7 @@ if [[ "${SKIP_LITMUS}" != "1" ]]; then
       --namespace "${LITMUS_NAMESPACE}" \
       --create-namespace \
       --wait \
-      --timeout 10m
+      --timeout 15m
   else
     echo "==> Litmus namespace ${LITMUS_NAMESPACE} already exists (skipping install)"
   fi
@@ -53,8 +53,12 @@ fi
 
 echo "==> Deploying quickstart application"
 kubectl apply -k examples/quickstart
-kubectl wait --for=condition=available deployment/flask-app \
-  -n hello-world-app --timeout=180s
+if ! kubectl wait --for=condition=available deployment/flask-app \
+  -n hello-world-app --timeout=300s; then
+  echo "error: quickstart app did not become ready" >&2
+  kubectl get pods -n hello-world-app -o wide || true
+  exit 1
+fi
 
 if [[ "${SKIP_CHAOS}" != "1" ]]; then
   echo "==> Pre-flight (CHAOS_ENV=${CHAOS_ENV})"

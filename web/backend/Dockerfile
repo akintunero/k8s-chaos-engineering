@@ -7,16 +7,17 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certifi
     && curl -fsSL "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl" -o /usr/local/bin/kubectl \
     && chmod +x /usr/local/bin/kubectl
 
-COPY scripts/requirements.txt /app/scripts/requirements.txt
-COPY web/backend/requirements.txt /app/web/backend/requirements.txt
-RUN pip install --no-cache-dir -r scripts/requirements.txt -r web/backend/requirements.txt
-
-COPY scripts/ /app/scripts/
+COPY pyproject.toml README.md LICENSE NOTICE /app/
+COPY src/ /app/src/
+COPY hack/sync-package-data.sh /app/hack/sync-package-data.sh
 COPY config/ /app/config/
 COPY experiments/ /app/experiments/
 COPY web/backend/ /app/web/backend/
 
-ENV PYTHONPATH=/app/scripts
+RUN chmod +x /app/hack/sync-package-data.sh \
+    && /app/hack/sync-package-data.sh \
+    && pip install --no-cache-dir -e "/app[web]"
+
 WORKDIR /app/web/backend
 
 EXPOSE 8000

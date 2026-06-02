@@ -59,6 +59,8 @@ def cmd_list(args: argparse.Namespace) -> int:
     logger = get_logger("cli")
 
     if args.gamedays:
+        from k8s_chaos.utils.catalog import list_gameday_workflows
+
         for name in list_gameday_workflows():
             logger.info("  gameday: %s", name)
         return 0

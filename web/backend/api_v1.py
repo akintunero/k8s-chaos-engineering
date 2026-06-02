@@ -9,7 +9,8 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
 from loader import load_chaos_modules
-from utils import get_config
+
+from k8s_chaos.utils import get_config
 
 router = APIRouter(prefix="/api/v1", tags=["v1"])
 _mods = load_chaos_modules()
