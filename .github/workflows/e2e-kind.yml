@@ -27,7 +27,7 @@ jobs:
           config: hack/kind-cluster.yaml
 
       - name: Install Helm
-        uses: azure/setup-helm@v4
+        uses: azure/setup-helm@v5
         with:
           version: v3.14.4
 
