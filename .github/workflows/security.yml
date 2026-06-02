@@ -21,23 +21,20 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: scripts/requirements.txt
+          cache-dependency-path: pyproject.toml
 
       - name: Install dependencies
-        working-directory: scripts
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -e .
           pip install bandit safety
 
       - name: Run Bandit
-        working-directory: scripts
         run: |
-          bandit -r . -f json -o bandit-report.json -ll
-          bandit -r . -f txt -ll
+          bandit -r src/k8s_chaos -f json -o bandit-report.json -ll
+          bandit -r src/k8s_chaos -f txt -ll
 
       - name: Run Safety
-        working-directory: scripts
         continue-on-error: true
         run: |
           safety check --json > safety-report.json 2>&1 || true
@@ -49,5 +46,5 @@ jobs:
         with:
           name: security-reports
           path: |
-            scripts/bandit-report.json
-            scripts/safety-report.json
+            bandit-report.json
+            safety-report.json

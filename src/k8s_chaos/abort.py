@@ -30,7 +30,7 @@ def abort_namespace(namespace: str) -> int:
     for name in names.split():
         run_command(
             f"kubectl patch chaosengine {name} -n {namespace} "
-            "--type='merge' -p '{\"spec\":{\"engineState\":\"stop\"}}'",
+            '--type=\'merge\' -p \'{"spec":{"engineState":"stop"}}\'',
             check=False,
         )
         run_command(f"kubectl delete chaosengine {name} -n {namespace}", check=False)
@@ -41,7 +41,9 @@ def abort_namespace(namespace: str) -> int:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Abort all chaos experiments")
-    parser.add_argument("--namespace", default=None, help="Namespace (default: app namespace)")
+    parser.add_argument(
+        "--namespace", default=None, help="Namespace (default: app namespace)"
+    )
     parser.add_argument("--all-namespaces", action="store_true")
     args = parser.parse_args()
 
@@ -50,10 +52,12 @@ def main() -> None:
 
     if args.all_namespaces:
         if not profile.allow_abort_all:
-            logger.error(f"CHAOS_ENV={profile.name} does not allow --all-namespaces abort")
+            logger.error(
+                f"CHAOS_ENV={profile.name} does not allow --all-namespaces abort"
+            )
             sys.exit(1)
         result = run_command(
-            "kubectl get chaosengine -A -o jsonpath='{range .items[*]}{.metadata.namespace}{\" \"}{.metadata.name}{\"\\n\"}{end}'",
+            'kubectl get chaosengine -A -o jsonpath=\'{range .items[*]}{.metadata.namespace}{" "}{.metadata.name}{"\\n"}{end}\'',
             check=False,
         )
         total = 0

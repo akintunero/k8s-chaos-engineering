@@ -11,7 +11,12 @@ from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 from k8s_chaos.utils import get_config, get_logger
-from k8s_chaos.utils.catalog import get_experiment_meta, get_quickstart_settings, load_catalog, repo_root
+from k8s_chaos.utils.catalog import (
+    get_experiment_meta,
+    get_quickstart_settings,
+    load_catalog,
+    repo_root,
+)
 from k8s_chaos.utils.clusters import (
     apply_cluster_env,
     assert_experiment_allowed_on_cluster,
@@ -77,7 +82,12 @@ def run_experiment_on_clusters(
             results.append(_run_experiment_on_cluster(name, experiment))
         except Exception as exc:
             results.append(
-                {"cluster": name, "verdict": "FAIL", "experiment": experiment, "error": str(exc)}
+                {
+                    "cluster": name,
+                    "verdict": "FAIL",
+                    "experiment": experiment,
+                    "error": str(exc),
+                }
             )
     return results
 
@@ -109,8 +119,12 @@ def run_gameday_on_clusters(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "report_type": "multicluster_gameday",
         "gameday": workflow,
-        "verdict": "PASS" if all(r.get("verdict") == "PASS" for r in results) else "FAIL",
+        "verdict": (
+            "PASS" if all(r.get("verdict") == "PASS" for r in results) else "FAIL"
+        ),
         "clusters": results,
     }
-    write_report(aggregate, repo_root() / "reports", basename=f"multicluster-{workflow}")
+    write_report(
+        aggregate, repo_root() / "reports", basename=f"multicluster-{workflow}"
+    )
     return results

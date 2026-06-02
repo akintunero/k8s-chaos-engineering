@@ -24,7 +24,9 @@ def load_catalog(path: Optional[Path] = None) -> Dict[str, Any]:
         return yaml.safe_load(handle) or {}
 
 
-def get_experiment_meta(catalog: Dict[str, Any], experiment_name: str) -> Dict[str, Any]:
+def get_experiment_meta(
+    catalog: Dict[str, Any], experiment_name: str
+) -> Dict[str, Any]:
     for item in catalog.get("experiments", []):
         if item.get("name") == experiment_name:
             return item

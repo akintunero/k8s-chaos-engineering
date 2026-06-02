@@ -133,7 +133,9 @@ def pods_ready_fraction(namespace: str, label_selector: str) -> tuple[float, int
     ready = 0
     for pod in items:
         conditions = pod.get("status", {}).get("conditions", [])
-        if any(c.get("type") == "Ready" and c.get("status") == "True" for c in conditions):
+        if any(
+            c.get("type") == "Ready" and c.get("status") == "True" for c in conditions
+        ):
             ready += 1
     return ready / len(items), ready, len(items)
 
@@ -146,7 +148,7 @@ def query_prometheus(promql: str) -> Optional[float]:
     url = f"{base}/api/v1/query?{query}"
     timeout = int(os.getenv("PROMETHEUS_TIMEOUT", "5"))
     try:
-        with urllib.request.urlopen(url, timeout=timeout) as response:
+        with urllib.request.urlopen(url, timeout=timeout) as response:  # nosec B310
             payload = json.loads(response.read().decode())
     except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
         logger.warning("Prometheus query failed: %s", exc)

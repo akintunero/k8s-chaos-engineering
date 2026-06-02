@@ -133,7 +133,9 @@ def pods_ready_fraction(namespace: str, label_selector: str) -> tuple[float, int
     ready = 0
     for pod in items:
         conditions = pod.get("status", {}).get("conditions", [])
-        if any(c.get("type") == "Ready" and c.get("status") == "True" for c in conditions):
+        if any(
+            c.get("type") == "Ready" and c.get("status") == "True" for c in conditions
+        ):
             ready += 1
     return ready / len(items), ready, len(items)
 

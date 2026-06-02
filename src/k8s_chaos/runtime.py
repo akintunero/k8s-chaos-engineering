@@ -38,8 +38,10 @@ def command_needs_runtime_tools(command: str, args) -> bool:
         return False
     if command == "gameday" and getattr(args, "list", False):
         return False
-    if command == "clusters" and not getattr(args, "experiment", None) and not getattr(
-        args, "gameday", None
+    if (
+        command == "clusters"
+        and not getattr(args, "experiment", None)
+        and not getattr(args, "gameday", None)
     ):
         return False
     return True

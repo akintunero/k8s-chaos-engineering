@@ -2,11 +2,6 @@ import { useEffect, useState } from 'react'
 import { Play, Square, RefreshCw, AlertCircle } from 'lucide-react'
 import { api } from '../services/api'
 
-interface Experiment {
-  name: string
-  status?: string
-}
-
 export default function Experiments() {
   const [experiments, setExperiments] = useState<string[]>([])
   const [running, setRunning] = useState<string[]>([])
@@ -71,6 +66,7 @@ export default function Experiments() {
         <h1 className="text-3xl font-bold text-gray-900">Experiments</h1>
         <p className="mt-2 text-sm text-gray-600">
           Run and manage chaos engineering experiments
+          {selectedExperiment ? ` — last started: ${selectedExperiment}` : ''}
         </p>
       </div>
 

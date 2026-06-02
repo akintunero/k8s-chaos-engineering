@@ -9,7 +9,12 @@ import argparse
 import sys
 
 from k8s_chaos.utils import get_config, get_logger
-from k8s_chaos.utils.catalog import get_experiment_meta, get_quickstart_settings, load_catalog, repo_root
+from k8s_chaos.utils.catalog import (
+    get_experiment_meta,
+    get_quickstart_settings,
+    load_catalog,
+    repo_root,
+)
 from k8s_chaos.utils.reporting import print_experiment_summary, write_report
 from k8s_chaos.utils.slo import build_report_payload, evaluate_experiment_slo
 
@@ -32,7 +37,9 @@ def main() -> None:
     namespace = args.namespace or quickstart.get("namespace", config.app_namespace)
     deployment = quickstart.get("deployment", "flask-app")
     expected = int(quickstart.get("expected_replicas", 3))
-    timeout = args.recovery_timeout or int(quickstart.get("recovery_timeout_seconds", 120))
+    timeout = args.recovery_timeout or int(
+        quickstart.get("recovery_timeout_seconds", 120)
+    )
 
     meta = get_experiment_meta(catalog, args.experiment)
     evaluation = evaluate_experiment_slo(

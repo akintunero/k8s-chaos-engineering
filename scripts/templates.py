@@ -187,12 +187,16 @@ class TemplateManager:
         """Recursively substitute {{name}} variables in YAML data."""
         if isinstance(data, dict):
             return {
-                k: self._apply_template_variables(v, experiment_name, namespace, parameters)
+                k: self._apply_template_variables(
+                    v, experiment_name, namespace, parameters
+                )
                 for k, v in data.items()
             }
         elif isinstance(data, list):
             return [
-                self._apply_template_variables(item, experiment_name, namespace, parameters)
+                self._apply_template_variables(
+                    item, experiment_name, namespace, parameters
+                )
                 for item in data
             ]
         elif isinstance(data, str):

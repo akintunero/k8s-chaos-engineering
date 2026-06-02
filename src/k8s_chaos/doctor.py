@@ -71,7 +71,13 @@ def main() -> None:
     logger.info("=" * 30)
 
     ok = True
-    ok = check_tool("kubectl", "kubectl version --client --short 2>/dev/null || kubectl version --client") and ok
+    ok = (
+        check_tool(
+            "kubectl",
+            "kubectl version --client --short 2>/dev/null || kubectl version --client",
+        )
+        and ok
+    )
     ok = check_tool("helm", "helm version --short") and ok
     ok = check_tool("python3", "python3 --version") and ok
     ok = check_cluster() and ok

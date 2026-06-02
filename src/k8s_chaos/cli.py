@@ -20,7 +20,12 @@ def _repo_root():
 
 
 def cmd_doctor(args: argparse.Namespace) -> int:
-    from k8s_chaos.doctor import check_cluster, check_litmus, check_quickstart_app, check_tool
+    from k8s_chaos.doctor import (
+        check_cluster,
+        check_litmus,
+        check_quickstart_app,
+        check_tool,
+    )
 
     ok = True
     ok = check_tool("kubectl", "kubectl version --client") and ok
@@ -38,7 +43,6 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 def cmd_preflight(args: argparse.Namespace) -> int:
     from k8s_chaos.preflight import run_preflight
-
     from k8s_chaos.utils import get_logger
 
     logger = get_logger("cli")
@@ -63,7 +67,9 @@ def cmd_list(args: argparse.Namespace) -> int:
         from k8s_chaos.utils.clusters import list_clusters
 
         for c in list_clusters():
-            logger.info("  cluster: %s (context=%s, env=%s)", c.name, c.context, c.chaos_env)
+            logger.info(
+                "  cluster: %s (context=%s, env=%s)", c.name, c.context, c.chaos_env
+            )
         return 0
 
     experiments = chaos_runner.list_experiments()
@@ -148,7 +154,10 @@ def cmd_gameday(args: argparse.Namespace) -> int:
 
 
 def cmd_clusters(args: argparse.Namespace) -> int:
-    from k8s_chaos.multicluster import run_experiment_on_clusters, run_gameday_on_clusters
+    from k8s_chaos.multicluster import (
+        run_experiment_on_clusters,
+        run_gameday_on_clusters,
+    )
     from k8s_chaos.utils.clusters import list_clusters, resolve_clusters
     from k8s_chaos.utils.logging import get_logger
 
@@ -159,7 +168,9 @@ def cmd_clusters(args: argparse.Namespace) -> int:
         return 1
 
     if args.gameday:
-        results = run_gameday_on_clusters(args.gameday, names, allow_prod=args.allow_prod)
+        results = run_gameday_on_clusters(
+            args.gameday, names, allow_prod=args.allow_prod
+        )
     elif args.experiment:
         results = run_experiment_on_clusters(
             args.experiment, names, allow_prod=args.allow_prod

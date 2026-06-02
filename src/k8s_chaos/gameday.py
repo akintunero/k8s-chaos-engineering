@@ -15,7 +15,13 @@ from typing import Any, Dict, List, Optional
 import yaml
 
 from k8s_chaos.utils import get_config, get_logger
-from k8s_chaos.utils.catalog import get_experiment_meta, get_quickstart_settings, list_gameday_workflows, load_catalog, repo_root
+from k8s_chaos.utils.catalog import (
+    get_experiment_meta,
+    get_quickstart_settings,
+    list_gameday_workflows,
+    load_catalog,
+    repo_root,
+)
 from k8s_chaos.utils.reporting import print_gameday_summary, write_report
 from k8s_chaos.utils.safety import assert_experiment_allowed, get_chaos_env
 from k8s_chaos.utils.slo import build_report_payload, evaluate_experiment_slo, run_probe
@@ -151,15 +157,21 @@ def run_wait_step(step: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
-def execute_gameday(workflow_name: str, *, skip_preflight: bool = False) -> Dict[str, Any]:
+def execute_gameday(
+    workflow_name: str, *, skip_preflight: bool = False
+) -> Dict[str, Any]:
     workflow = load_workflow(workflow_name)
     catalog = load_catalog()
     quickstart = get_quickstart_settings(catalog)
     config = get_config()
 
-    namespace = workflow.get("namespace", quickstart.get("namespace", config.app_namespace))
+    namespace = workflow.get(
+        "namespace", quickstart.get("namespace", config.app_namespace)
+    )
     deployment = workflow.get("deployment", quickstart.get("deployment", "flask-app"))
-    expected = int(workflow.get("expected_replicas", quickstart.get("expected_replicas", 3)))
+    expected = int(
+        workflow.get("expected_replicas", quickstart.get("expected_replicas", 3))
+    )
     default_recovery = int(
         workflow.get(
             "default_recovery_timeout_seconds",
@@ -274,7 +286,9 @@ def main() -> None:
 
     logger.info("Starting GameDay: %s (CHAOS_ENV=%s)", args.workflow, get_chaos_env())
     report = execute_gameday(args.workflow, skip_preflight=args.skip_preflight)
-    path = write_report(report, repo_root() / args.output_dir, basename=f"gameday-{args.workflow}")
+    path = write_report(
+        report, repo_root() / args.output_dir, basename=f"gameday-{args.workflow}"
+    )
     print_gameday_summary(report, path)
 
     if report.get("verdict") != "PASS":

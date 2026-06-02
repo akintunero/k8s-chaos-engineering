@@ -2,10 +2,10 @@ name: Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
-  workflow_call:  # Allow this workflow to be called by other workflows
+    branches: [main, develop]
+  workflow_call:
 
 jobs:
   test:
@@ -13,34 +13,33 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
-    
+
     steps:
-    - uses: actions/checkout@v4
-    
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip'
-    
-    - name: Install dependencies
-      working-directory: scripts
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install -r requirements-dev.txt
-    
-    - name: Run tests with pytest
-      working-directory: .
-      run: |
-        export PYTHONPATH=$PWD/scripts:$PYTHONPATH
-        pytest tests/ -v --cov=scripts --cov-report=xml --cov-report=term-missing
-    
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
-      if: always()
-      with:
-        file: ./coverage.xml
-        flags: unittests
-        name: codecov-umbrella
-        fail_ci_if_error: false
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          chmod +x hack/ensure-dev-install.sh hack/sync-package-data.sh
+          ./hack/ensure-dev-install.sh
+          ./hack/sync-package-data.sh
+          pip install -e ".[dev]"
+
+      - name: Run tests with pytest
+        run: pytest tests/ -v --cov=k8s_chaos --cov-report=xml --cov-report=term-missing
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        if: always()
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false

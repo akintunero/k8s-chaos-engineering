@@ -36,14 +36,18 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: scripts/requirements.txt
+          cache-dependency-path: pyproject.toml
 
-      - name: Install Python dependencies
-        run: python -m pip install -r scripts/requirements.txt
+      - name: Install package
+        run: |
+          python -m pip install --upgrade pip
+          chmod +x hack/ensure-dev-install.sh hack/sync-package-data.sh
+          ./hack/ensure-dev-install.sh
+          ./hack/sync-package-data.sh
+          pip install -e .
 
       - name: Run golden-path quickstart
         env:
-          PYTHONPATH: ${{ github.workspace }}/scripts
           CHAOS_DURATION: "60"
         run: ./hack/quickstart.sh
 

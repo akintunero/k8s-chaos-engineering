@@ -116,7 +116,9 @@ def resolve_clusters(
     return resolved
 
 
-def assert_experiment_allowed_on_cluster(cluster: ClusterProfile, experiment: str) -> None:
+def assert_experiment_allowed_on_cluster(
+    cluster: ClusterProfile, experiment: str
+) -> None:
     if not cluster.allowed_experiments:
         return
     if experiment not in cluster.allowed_experiments:

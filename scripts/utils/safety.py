@@ -50,7 +50,11 @@ def get_chaos_env() -> str:
 
 def load_blast_radius_config(path: Optional[Path] = None) -> Dict[str, Any]:
     if path is None:
-        path = Path(__file__).resolve().parent.parent.parent / "config" / "blast-radius.yaml"
+        path = (
+            Path(__file__).resolve().parent.parent.parent
+            / "config"
+            / "blast-radius.yaml"
+        )
     if not path.exists():
         raise SafetyError(f"Blast-radius config not found: {path}")
     with open(path, encoding="utf-8") as handle:
@@ -78,7 +82,9 @@ def get_profile(env: Optional[str] = None) -> BlastRadiusProfile:
     )
 
 
-def assert_namespace_allowed(namespace: str, profile: Optional[BlastRadiusProfile] = None) -> None:
+def assert_namespace_allowed(
+    namespace: str, profile: Optional[BlastRadiusProfile] = None
+) -> None:
     profile = profile or get_profile()
     if namespace in profile.blocked_namespaces:
         raise SafetyError(

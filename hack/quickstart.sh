@@ -10,7 +10,6 @@ SKIP_CHAOS="${SKIP_CHAOS:-0}"
 EXPERIMENT="${EXPERIMENT:-pod-delete}"
 LITMUS_NAMESPACE="${LITMUS_NAMESPACE:-litmus}"
 
-export PYTHONPATH="${REPO_ROOT}/scripts:${PYTHONPATH:-}"
 export CHAOS_ENV="${CHAOS_ENV:-dev}"
 
 echo "==> Chaos Engineering Quickstart"
@@ -29,10 +28,13 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-python3 -m pip install -q -r scripts/requirements.txt
+chmod +x "${REPO_ROOT}/hack/ensure-dev-install.sh" "${REPO_ROOT}/hack/sync-package-data.sh"
+"${REPO_ROOT}/hack/ensure-dev-install.sh"
+"${REPO_ROOT}/hack/sync-package-data.sh"
+python3 -m pip install -q -e .
 
 echo "==> Running doctor (tools + cluster)"
-python3 scripts/doctor.py
+k8s-chaos doctor
 
 if [[ "${SKIP_LITMUS}" != "1" ]]; then
   if ! kubectl get namespace "${LITMUS_NAMESPACE}" >/dev/null 2>&1; then
@@ -56,21 +58,21 @@ kubectl wait --for=condition=available deployment/flask-app \
 
 if [[ "${SKIP_CHAOS}" != "1" ]]; then
   echo "==> Pre-flight (CHAOS_ENV=${CHAOS_ENV})"
-  python3 scripts/preflight.py
+  k8s-chaos preflight
 
   echo "==> Running experiment: ${EXPERIMENT}"
-  SKIP_PREFLIGHT=1 python3 scripts/chaos-runner.py run "${EXPERIMENT}"
+  SKIP_PREFLIGHT=1 k8s-chaos run "${EXPERIMENT}"
 
   chaos_duration="${CHAOS_DURATION:-45}"
   echo "==> Waiting ${chaos_duration}s for chaos to complete..."
   sleep "${chaos_duration}"
 
   echo "==> Generating report"
-  python3 scripts/quickstart_report.py --experiment "${EXPERIMENT}"
+  k8s-chaos report "${EXPERIMENT}"
 fi
 
 echo ""
 echo "Quickstart complete."
 echo "  App:    kubectl get pods -n hello-world-app"
 echo "  Litmus: kubectl get pods -n ${LITMUS_NAMESPACE}"
-echo "  Stop:   python3 scripts/chaos-runner.py stop ${EXPERIMENT}"
+echo "  Stop:   k8s-chaos abort"

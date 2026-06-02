@@ -19,29 +19,24 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-          cache-dependency-path: scripts/requirements-dev.txt
+          cache-dependency-path: pyproject.toml
 
-      - name: Install dependencies
-        working-directory: scripts
+      - name: Install package and linters
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements-dev.txt
+          pip install -e ".[dev]"
 
       - name: Run isort
-        working-directory: scripts
-        run: isort --check-only --profile black .
+        run: isort --check-only --profile black src/k8s_chaos
 
       - name: Run black
-        working-directory: scripts
-        run: black --check .
+        run: black --check src/k8s_chaos
 
       - name: Run flake8
-        working-directory: scripts
         run: |
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+          flake8 src/k8s_chaos --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 src/k8s_chaos --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Run mypy
-        working-directory: scripts
         continue-on-error: true
-        run: mypy . --ignore-missing-imports
+        run: mypy src/k8s_chaos --ignore-missing-imports

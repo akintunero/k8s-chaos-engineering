@@ -8,7 +8,9 @@ from pathlib import Path
 from typing import Any, Dict
 
 
-def write_report(report: Dict[str, Any], output_dir: Path, basename: str = "latest") -> Path:
+def write_report(
+    report: Dict[str, Any], output_dir: Path, basename: str = "latest"
+) -> Path:
     output_dir.mkdir(parents=True, exist_ok=True)
     latest = output_dir / f"{basename}.json"
     ts = report.get("timestamp", datetime.now(timezone.utc).isoformat())
@@ -42,7 +44,9 @@ def print_gameday_summary(report: Dict[str, Any], report_path: Path) -> None:
     print(f"  GameDay Report: {report.get('gameday')}")
     print("=" * 50)
     for step in report.get("steps", []):
-        print(f"  [{step.get('verdict', '?')}] {step.get('id')}: {step.get('description', '')}")
+        print(
+            f"  [{step.get('verdict', '?')}] {step.get('id')}: {step.get('description', '')}"
+        )
     print(f"  Overall:     {report.get('verdict')}")
     print(f"  Report:      {report_path}")
     print("=" * 50)

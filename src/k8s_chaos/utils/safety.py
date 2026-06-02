@@ -80,7 +80,9 @@ def get_profile(env: Optional[str] = None) -> BlastRadiusProfile:
     )
 
 
-def assert_namespace_allowed(namespace: str, profile: Optional[BlastRadiusProfile] = None) -> None:
+def assert_namespace_allowed(
+    namespace: str, profile: Optional[BlastRadiusProfile] = None
+) -> None:
     profile = profile or get_profile()
     if namespace in profile.blocked_namespaces:
         raise SafetyError(
