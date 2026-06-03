@@ -82,7 +82,7 @@ pythonpath = ["src", "scripts"]
 
 [tool.black]
 line-length = 127
-target-version = ["py39", "py310", "py311", "py312"]
+target-version = ["py311"]
 
 [tool.isort]
 profile = "black"

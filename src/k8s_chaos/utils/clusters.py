@@ -109,22 +109,16 @@ def resolve_clusters(
                     "Set allow_prod in policies and pass --allow-prod to proceed."
                 )
             if os.getenv("CHAOS_CONFIRM", "").lower() not in ("yes", "true", "1"):
-                raise SafetyError(
-                    f"Cluster '{name}' requires CHAOS_CONFIRM=yes for env={cluster.chaos_env}"
-                )
+                raise SafetyError(f"Cluster '{name}' requires CHAOS_CONFIRM=yes for env={cluster.chaos_env}")
         resolved.append(name)
     return resolved
 
 
-def assert_experiment_allowed_on_cluster(
-    cluster: ClusterProfile, experiment: str
-) -> None:
+def assert_experiment_allowed_on_cluster(cluster: ClusterProfile, experiment: str) -> None:
     if not cluster.allowed_experiments:
         return
     if experiment not in cluster.allowed_experiments:
-        raise SafetyError(
-            f"Experiment '{experiment}' not allowed on cluster '{cluster.name}'"
-        )
+        raise SafetyError(f"Experiment '{experiment}' not allowed on cluster '{cluster.name}'")
 
 
 def current_context() -> Optional[str]:

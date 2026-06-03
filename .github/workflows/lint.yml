@@ -30,7 +30,7 @@ jobs:
         run: isort --check-only --profile black src/k8s_chaos
 
       - name: Run black
-        run: black --check src/k8s_chaos
+        run: black --check --target-version py311 src/k8s_chaos
 
       - name: Run flake8
         run: |

@@ -69,9 +69,7 @@ def cmd_list(args: argparse.Namespace) -> int:
         from k8s_chaos.utils.clusters import list_clusters
 
         for c in list_clusters():
-            logger.info(
-                "  cluster: %s (context=%s, env=%s)", c.name, c.context, c.chaos_env
-            )
+            logger.info("  cluster: %s (context=%s, env=%s)", c.name, c.context, c.chaos_env)
         return 0
 
     experiments = chaos_runner.list_experiments()
@@ -170,13 +168,9 @@ def cmd_clusters(args: argparse.Namespace) -> int:
         return 1
 
     if args.gameday:
-        results = run_gameday_on_clusters(
-            args.gameday, names, allow_prod=args.allow_prod
-        )
+        results = run_gameday_on_clusters(args.gameday, names, allow_prod=args.allow_prod)
     elif args.experiment:
-        results = run_experiment_on_clusters(
-            args.experiment, names, allow_prod=args.allow_prod
-        )
+        results = run_experiment_on_clusters(args.experiment, names, allow_prod=args.allow_prod)
     else:
         for c in list_clusters():
             if not names or c.name in names:

@@ -121,6 +121,10 @@ ensure-dev-install: ## Remove stale scripts/*.egg-info before pip install
 install: ensure-dev-install sync-package-data ## Install CLI locally (editable)
 	$(PYTHON) -m pip install -e ".[dev]"
 
+format: ## Format Python sources (Black + isort, py311)
+	isort src/k8s_chaos
+	black --target-version py311 src/k8s_chaos
+
 pypi-ready: ## Run tests, build wheel, and smoke-install (pre-tag gate)
 	chmod +x hack/pre-release-check.sh
 	./hack/pre-release-check.sh

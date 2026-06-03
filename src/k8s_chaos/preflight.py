@@ -29,11 +29,7 @@ def check_litmus(namespace: str) -> bool:
     if not pods:
         logger.error(f"No pods in Litmus namespace '{namespace}'")
         return False
-    not_ready = [
-        line
-        for line in pods.splitlines()
-        if line and "Running" not in line and "Completed" not in line
-    ]
+    not_ready = [line for line in pods.splitlines() if line and "Running" not in line and "Completed" not in line]
     if not_ready:
         logger.warning(f"Some Litmus pods not Running: {len(not_ready)}")
     logger.info(f"OK Litmus namespace '{namespace}'")
@@ -61,10 +57,7 @@ def check_no_running_chaos(namespace: str) -> bool:
         check=False,
     )
     if engines:
-        logger.error(
-            f"ChaosEngine resources already exist in {namespace}. "
-            "Run: python3 scripts/chaos-runner.py abort"
-        )
+        logger.error(f"ChaosEngine resources already exist in {namespace}. " "Run: python3 scripts/chaos-runner.py abort")
         return False
     logger.info(f"OK no ChaosEngine resources in {namespace}")
     return True

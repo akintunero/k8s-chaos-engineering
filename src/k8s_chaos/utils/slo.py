@@ -87,13 +87,11 @@ def _prometheus_url() -> str:
 
 def deployment_ready(namespace: str, deployment: str) -> tuple[int, int]:
     ready = run_command(
-        f"kubectl get deployment {deployment} -n {namespace} "
-        "-o jsonpath='{.status.readyReplicas}'",
+        f"kubectl get deployment {deployment} -n {namespace} " "-o jsonpath='{.status.readyReplicas}'",
         check=False,
     )
     desired = run_command(
-        f"kubectl get deployment {deployment} -n {namespace} "
-        "-o jsonpath='{.spec.replicas}'",
+        f"kubectl get deployment {deployment} -n {namespace} " "-o jsonpath='{.spec.replicas}'",
         check=False,
     )
     ready_n = int(ready) if ready and ready.isdigit() else 0
@@ -133,9 +131,7 @@ def pods_ready_fraction(namespace: str, label_selector: str) -> tuple[float, int
     ready = 0
     for pod in items:
         conditions = pod.get("status", {}).get("conditions", [])
-        if any(
-            c.get("type") == "Ready" and c.get("status") == "True" for c in conditions
-        ):
+        if any(c.get("type") == "Ready" and c.get("status") == "True" for c in conditions):
             ready += 1
     return ready / len(items), ready, len(items)
 
@@ -194,9 +190,7 @@ def run_probe(
     if ptype == "deployment_ready":
         min_ready = int(probe.get("min_ready_replicas", expected_replicas))
         timeout = int(probe.get("max_recovery_seconds", recovery_timeout))
-        ok, ready_n, desired_n, elapsed = wait_for_deployment_slo(
-            namespace, deployment, min_ready, timeout, interval
-        )
+        ok, ready_n, desired_n, elapsed = wait_for_deployment_slo(namespace, deployment, min_ready, timeout, interval)
         return ProbeResult(
             name=name,
             type=ptype,
@@ -300,9 +294,7 @@ def evaluate_experiment_slo(
     config = get_config()
     meta = experiment_meta or {}
     hypothesis = meta.get("hypothesis")
-    probes_cfg = extra_probes or default_probes_for_experiment(
-        meta, expected_replicas, recovery_timeout
-    )
+    probes_cfg = extra_probes or default_probes_for_experiment(meta, expected_replicas, recovery_timeout)
 
     evaluation = SloEvaluation(experiment=experiment_name, hypothesis=hypothesis)
     recovery_elapsed = 0.0
@@ -323,8 +315,7 @@ def evaluate_experiment_slo(
     evaluation.recovery_seconds = recovery_elapsed
 
     engine_status = run_command(
-        f"kubectl get chaosengine {experiment_name} -n {namespace} "
-        "-o jsonpath='{.status.engineStatus}'",
+        f"kubectl get chaosengine {experiment_name} -n {namespace} " "-o jsonpath='{.status.engineStatus}'",
         check=False,
     )
     evaluation.engine_status = engine_status or "unknown"

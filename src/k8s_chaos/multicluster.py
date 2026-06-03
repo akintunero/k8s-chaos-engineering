@@ -119,12 +119,8 @@ def run_gameday_on_clusters(
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "report_type": "multicluster_gameday",
         "gameday": workflow,
-        "verdict": (
-            "PASS" if all(r.get("verdict") == "PASS" for r in results) else "FAIL"
-        ),
+        "verdict": ("PASS" if all(r.get("verdict") == "PASS" for r in results) else "FAIL"),
         "clusters": results,
     }
-    write_report(
-        aggregate, repo_root() / "reports", basename=f"multicluster-{workflow}"
-    )
+    write_report(aggregate, repo_root() / "reports", basename=f"multicluster-{workflow}")
     return results

@@ -37,9 +37,7 @@ class JSONFormatter(logging.Formatter):
         return json.dumps(log_data)
 
 
-def setup_logging(
-    level: str = "INFO", json_format: bool = False, log_file: Optional[str] = None
-) -> None:
+def setup_logging(level: str = "INFO", json_format: bool = False, log_file: Optional[str] = None) -> None:
     """
     Setup logging configuration.
 

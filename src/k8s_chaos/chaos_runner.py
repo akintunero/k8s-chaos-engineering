@@ -66,9 +66,7 @@ def run_experiment(experiment_name: str, namespace: str = None):
         if not run_preflight(namespace):
             sys.exit(1)
 
-    logger.info(
-        f"Running chaos experiment: {experiment_name} (CHAOS_ENV={get_profile().name})"
-    )
+    logger.info(f"Running chaos experiment: {experiment_name} (CHAOS_ENV={get_profile().name})")
 
     # Check if experiment file exists
     experiment_file = Path(config.experiments_dir) / f"{experiment_name}.yaml"
@@ -152,9 +150,7 @@ def stop_experiment(experiment_name: str, namespace: str = None):
         logger.warning(f"Failed to stop experiment: {experiment_name}")
 
     # Delete the experiment
-    result = run_command(
-        f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False
-    )
+    result = run_command(f"kubectl delete chaosengine {experiment_name} -n {namespace}", check=False)
     if result:
         logger.info(f"✅ Stopped and deleted experiment: {experiment_name}")
     else:
@@ -217,23 +213,13 @@ def main():
 
     if len(sys.argv) < 2:
         print("Usage:")
-        print(
-            "  python chaos-runner.py list                    # List available experiments"
-        )
+        print("  python chaos-runner.py list                    # List available experiments")
         print("  python chaos-runner.py run <experiment>        # Run an experiment")
-        print(
-            "  python chaos-runner.py status <experiment>     # Check experiment status"
-        )
+        print("  python chaos-runner.py status <experiment>     # Check experiment status")
         print("  python chaos-runner.py stop <experiment>       # Stop an experiment")
-        print(
-            "  python chaos-runner.py running                 # List running experiments"
-        )
-        print(
-            "  python chaos-runner.py cleanup                 # Clean up all experiments"
-        )
-        print(
-            "  python chaos-runner.py abort                   # Emergency stop all engines"
-        )
+        print("  python chaos-runner.py running                 # List running experiments")
+        print("  python chaos-runner.py cleanup                 # Clean up all experiments")
+        print("  python chaos-runner.py abort                   # Emergency stop all engines")
         sys.exit(1)
 
     action = sys.argv[1]

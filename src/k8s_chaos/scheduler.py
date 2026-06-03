@@ -104,9 +104,7 @@ class ChaosScheduler:
                 logger.info(f"   Namespace: {namespace}")
                 return True
             else:
-                logger.error(
-                    f"Failed to create scheduled experiment: {experiment_name}"
-                )
+                logger.error(f"Failed to create scheduled experiment: {experiment_name}")
                 return False
         finally:
             if cronjob_file.exists():
@@ -150,9 +148,7 @@ class ChaosScheduler:
             logger.error(f"Failed to parse CronJobs: {e}")
             return []
 
-    def delete_scheduled_experiment(
-        self, experiment_name: str, namespace: Optional[str] = None
-    ) -> bool:
+    def delete_scheduled_experiment(self, experiment_name: str, namespace: Optional[str] = None) -> bool:
         """Delete a scheduled experiment"""
         namespace = namespace or self.namespace
 
@@ -164,9 +160,7 @@ class ChaosScheduler:
             return False
 
         cronjob_name = f"chaos-{experiment_name}"
-        result = run_command(
-            f"kubectl delete cronjob {cronjob_name} -n {namespace}", check=False
-        )
+        result = run_command(f"kubectl delete cronjob {cronjob_name} -n {namespace}", check=False)
 
         if result:
             logger.info(f"✅ Deleted scheduled experiment: {experiment_name}")
@@ -183,13 +177,7 @@ class ChaosScheduler:
 
         # Basic format check (minute hour day month weekday)
         for part in parts:
-            if not (
-                part.isdigit()
-                or part == "*"
-                or "/" in part
-                or "-" in part
-                or "," in part
-            ):
+            if not (part.isdigit() or part == "*" or "/" in part or "-" in part or "," in part):
                 return False
 
         return True
@@ -269,9 +257,7 @@ def main():
     subparsers = parser.add_subparsers(dest="command", help="Command to execute")
 
     # Create scheduled experiment
-    create_parser = subparsers.add_parser(
-        "create", help="Create a scheduled experiment"
-    )
+    create_parser = subparsers.add_parser("create", help="Create a scheduled experiment")
     create_parser.add_argument("experiment", help="Experiment name")
     create_parser.add_argument("schedule", help='Cron schedule (e.g., "0 2 * * *")')
     create_parser.add_argument("--file", help="Path to experiment YAML file")
@@ -282,9 +268,7 @@ def main():
     list_parser.add_argument("--namespace", help="Kubernetes namespace")
 
     # Delete scheduled experiment
-    delete_parser = subparsers.add_parser(
-        "delete", help="Delete a scheduled experiment"
-    )
+    delete_parser = subparsers.add_parser("delete", help="Delete a scheduled experiment")
     delete_parser.add_argument("experiment", help="Experiment name")
     delete_parser.add_argument("--namespace", help="Kubernetes namespace")
 
@@ -307,9 +291,7 @@ def main():
             sys.exit(0 if success else 1)
 
         elif args.command == "list":
-            experiments = scheduler.list_scheduled_experiments(
-                namespace=getattr(args, "namespace", None)
-            )
+            experiments = scheduler.list_scheduled_experiments(namespace=getattr(args, "namespace", None))
             if experiments:
                 logger.info("Scheduled experiments:")
                 for exp in experiments:

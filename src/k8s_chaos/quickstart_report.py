@@ -37,9 +37,7 @@ def main() -> None:
     namespace = args.namespace or quickstart.get("namespace", config.app_namespace)
     deployment = quickstart.get("deployment", "flask-app")
     expected = int(quickstart.get("expected_replicas", 3))
-    timeout = args.recovery_timeout or int(
-        quickstart.get("recovery_timeout_seconds", 120)
-    )
+    timeout = args.recovery_timeout or int(quickstart.get("recovery_timeout_seconds", 120))
 
     meta = get_experiment_meta(catalog, args.experiment)
     evaluation = evaluate_experiment_slo(

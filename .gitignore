@@ -8,7 +8,8 @@ logs/
 # Reports
 reports/
 chaos_reports/
-*.html
+reports/**/*.html
+chaos_reports/**/*.html
 *.pdf
 *.csv
 *.xml
@@ -190,12 +191,12 @@ old_reports/
 local_requirements.txt
 local_config.py
 
-# Reports
+# Generated report artifacts (keep web/frontend/index.html tracked)
 reports/
-*.txt
-*.html
-*.csv
-*.pdf
+reports/**/*.txt
+reports/**/*.html
+reports/**/*.csv
+reports/**/*.pdf
 
 # Logs
 *.log

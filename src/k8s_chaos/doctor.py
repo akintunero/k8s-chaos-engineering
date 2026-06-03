@@ -36,9 +36,7 @@ def check_cluster() -> bool:
 def check_litmus(namespace: str) -> bool:
     pods = run_command(f"kubectl get pods -n {namespace} --no-headers", check=False)
     if not pods:
-        logger.warning(
-            f"Litmus namespace '{namespace}' has no pods (install with make install-litmus)"
-        )
+        logger.warning(f"Litmus namespace '{namespace}' has no pods (install with make install-litmus)")
         return False
     logger.info(f"OK Litmus namespace '{namespace}' has running resources")
     return True
@@ -46,20 +44,15 @@ def check_litmus(namespace: str) -> bool:
 
 def check_quickstart_app(namespace: str) -> bool:
     ready = run_command(
-        f"kubectl get deployment flask-app -n {namespace} "
-        "-o jsonpath='{.status.readyReplicas}'",
+        f"kubectl get deployment flask-app -n {namespace} " "-o jsonpath='{.status.readyReplicas}'",
         check=False,
     )
     desired = run_command(
-        f"kubectl get deployment flask-app -n {namespace} "
-        "-o jsonpath='{.spec.replicas}'",
+        f"kubectl get deployment flask-app -n {namespace} " "-o jsonpath='{.spec.replicas}'",
         check=False,
     )
     if not ready or not desired:
-        logger.warning(
-            f"Quickstart app not ready in '{namespace}' "
-            "(deploy with kubectl apply -k examples/quickstart)"
-        )
+        logger.warning(f"Quickstart app not ready in '{namespace}' " "(deploy with kubectl apply -k examples/quickstart)")
         return False
     logger.info(f"OK Quickstart app replicas {ready}/{desired}")
     return True

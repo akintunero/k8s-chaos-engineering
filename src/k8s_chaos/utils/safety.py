@@ -64,9 +64,7 @@ def get_profile(env: Optional[str] = None) -> BlastRadiusProfile:
     data = load_blast_radius_config()
     profiles = data.get("profiles", {})
     if env not in profiles:
-        raise SafetyError(
-            f"Unknown CHAOS_ENV '{env}'. Valid: {', '.join(sorted(profiles.keys()))}"
-        )
+        raise SafetyError(f"Unknown CHAOS_ENV '{env}'. Valid: {', '.join(sorted(profiles.keys()))}")
     raw = profiles[env]
     return BlastRadiusProfile(
         name=env,
@@ -80,14 +78,10 @@ def get_profile(env: Optional[str] = None) -> BlastRadiusProfile:
     )
 
 
-def assert_namespace_allowed(
-    namespace: str, profile: Optional[BlastRadiusProfile] = None
-) -> None:
+def assert_namespace_allowed(namespace: str, profile: Optional[BlastRadiusProfile] = None) -> None:
     profile = profile or get_profile()
     if namespace in profile.blocked_namespaces:
-        raise SafetyError(
-            f"Namespace '{namespace}' is blocked for CHAOS_ENV={profile.name}"
-        )
+        raise SafetyError(f"Namespace '{namespace}' is blocked for CHAOS_ENV={profile.name}")
 
 
 def assert_experiment_allowed(
@@ -100,14 +94,11 @@ def assert_experiment_allowed(
     allowed = profile.allowed_experiments
     if experiment_name not in allowed:
         raise SafetyError(
-            f"Experiment '{experiment_name}' is not allowed for CHAOS_ENV={profile.name}. "
-            f"Allowed: {', '.join(allowed)}"
+            f"Experiment '{experiment_name}' is not allowed for CHAOS_ENV={profile.name}. " f"Allowed: {', '.join(allowed)}"
         )
     if profile.require_explicit_confirm and not confirmed:
         if os.getenv("CHAOS_CONFIRM", "").lower() not in ("yes", "true", "1"):
-            raise SafetyError(
-                f"CHAOS_ENV={profile.name} requires CHAOS_CONFIRM=yes to run experiments"
-            )
+            raise SafetyError(f"CHAOS_ENV={profile.name} requires CHAOS_CONFIRM=yes to run experiments")
 
 
 def is_experiment_file(name: str) -> bool:

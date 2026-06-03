@@ -86,15 +86,9 @@ class Config:
 
         # Extract namespaces
         if "namespaces" in file_config:
-            config_dict["app_namespace"] = file_config["namespaces"].get(
-                "app", "hello-world-app"
-            )
-            config_dict["litmus_namespace"] = file_config["namespaces"].get(
-                "litmus", "litmus"
-            )
-            config_dict["monitoring_namespace"] = file_config["namespaces"].get(
-                "monitoring", "monitoring"
-            )
+            config_dict["app_namespace"] = file_config["namespaces"].get("app", "hello-world-app")
+            config_dict["litmus_namespace"] = file_config["namespaces"].get("litmus", "litmus")
+            config_dict["monitoring_namespace"] = file_config["namespaces"].get("monitoring", "monitoring")
 
         # Extract chaos settings
         if "chaos" in file_config:
@@ -103,23 +97,15 @@ class Config:
             config_dict["retry_attempts"] = chaos.get("retry_attempts", 3)
             config_dict["retry_delay"] = chaos.get("retry_delay", 1)
             config_dict["check_interval"] = chaos.get("check_interval", 5)
-            config_dict["default_experiment_duration"] = chaos.get(
-                "default_experiment_duration", 60
-            )
-            config_dict["default_chaos_interval"] = chaos.get(
-                "default_chaos_interval", 10
-            )
+            config_dict["default_experiment_duration"] = chaos.get("default_experiment_duration", 60)
+            config_dict["default_chaos_interval"] = chaos.get("default_chaos_interval", 10)
 
         # Extract monitoring
         if "monitoring" in file_config:
             monitoring = file_config["monitoring"]
             config_dict["monitoring_enabled"] = monitoring.get("enabled", True)
-            config_dict["prometheus_url"] = monitoring.get(
-                "prometheus_url", "http://prometheus:9090"
-            )
-            config_dict["grafana_url"] = monitoring.get(
-                "grafana_url", "http://grafana:3000"
-            )
+            config_dict["prometheus_url"] = monitoring.get("prometheus_url", "http://prometheus:9090")
+            config_dict["grafana_url"] = monitoring.get("grafana_url", "http://grafana:3000")
 
         # Extract paths
         if "paths" in file_config:
@@ -136,9 +122,7 @@ class Config:
             notifications = file_config["notifications"]
             config_dict["notifications_enabled"] = notifications.get("enabled", False)
             if "slack" in notifications:
-                config_dict["slack_webhook_url"] = notifications["slack"].get(
-                    "webhook_url"
-                )
+                config_dict["slack_webhook_url"] = notifications["slack"].get("webhook_url")
             if "email" in notifications:
                 email = notifications["email"]
                 config_dict["email_enabled"] = email.get("enabled", False)
