@@ -33,6 +33,12 @@ jobs:
     steps:
       - name: Check all jobs passed
         run: |
+          echo "test: ${{ needs.test.result }}"
+          echo "lint: ${{ needs.lint.result }}"
+          echo "security: ${{ needs.security.result }}"
+          echo "manifests: ${{ needs.manifests.result }}"
+          echo "e2e-kind: ${{ needs.e2e-kind.result }}"
+          echo "backend: ${{ needs.backend.result }}"
           if [ "${{ needs.test.result }}" != "success" ] || \
              [ "${{ needs.lint.result }}" != "success" ] || \
              [ "${{ needs.security.result }}" != "success" ] || \

@@ -1,10 +1,6 @@
 name: E2E (KinD)
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
   workflow_dispatch:
   workflow_call:
 
@@ -41,7 +37,8 @@ jobs:
       - name: Install package
         run: |
           python -m pip install --upgrade pip
-          chmod +x hack/ensure-dev-install.sh hack/sync-package-data.sh
+          chmod +x hack/ensure-dev-install.sh hack/sync-package-data.sh \
+            hack/wait-litmus-ready.sh hack/install-litmus.sh hack/ensure-chaos-experiment.sh
           ./hack/ensure-dev-install.sh
           ./hack/sync-package-data.sh
           pip install -e .
@@ -53,7 +50,7 @@ jobs:
           K8S_CHAOS_E2E_MIN_READY: "1"
           K8S_CHAOS_RECOVERY_TIMEOUT: "180"
         run: |
-          chmod +x hack/wait-litmus-ready.sh
+          chmod +x hack/wait-litmus-ready.sh hack/install-litmus.sh hack/ensure-chaos-experiment.sh
           ./hack/quickstart.sh
 
       - name: Upload quickstart report

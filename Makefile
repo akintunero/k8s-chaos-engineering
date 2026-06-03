@@ -22,10 +22,9 @@ doctor-full: ## Doctor including Litmus and quickstart app
 setup: ## Interactive setup (Litmus, app, monitoring)
 	python3 scripts/setup.py
 
-install-litmus: ## Install LitmusChaos
-	helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/ 2>/dev/null || true
-	helm repo update
-	helm upgrade --install litmus litmuschaos/litmus --namespace litmus --create-namespace
+install-litmus: ## Install Litmus chaos operator (ChaosEngine CRDs)
+	chmod +x hack/install-litmus.sh hack/wait-litmus-ready.sh
+	./hack/install-litmus.sh
 
 deploy-app: ## Deploy quickstart sample application
 	kubectl apply -k examples/quickstart

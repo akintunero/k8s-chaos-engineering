@@ -30,7 +30,9 @@ fi
 
 chmod +x "${REPO_ROOT}/hack/ensure-dev-install.sh" \
   "${REPO_ROOT}/hack/sync-package-data.sh" \
-  "${REPO_ROOT}/hack/wait-litmus-ready.sh"
+  "${REPO_ROOT}/hack/wait-litmus-ready.sh" \
+  "${REPO_ROOT}/hack/install-litmus.sh" \
+  "${REPO_ROOT}/hack/ensure-chaos-experiment.sh"
 "${REPO_ROOT}/hack/ensure-dev-install.sh"
 "${REPO_ROOT}/hack/sync-package-data.sh"
 python3 -m pip install -q -e .
@@ -39,20 +41,7 @@ echo "==> Running doctor (tools + cluster)"
 k8s-chaos doctor
 
 if [[ "${SKIP_LITMUS}" != "1" ]]; then
-  if ! kubectl get namespace "${LITMUS_NAMESPACE}" >/dev/null 2>&1; then
-    echo "==> Installing LitmusChaos in namespace ${LITMUS_NAMESPACE}"
-    helm repo add litmuschaos https://litmuschaos.github.io/litmus-helm/ 2>/dev/null || true
-    helm repo update
-    helm upgrade --install litmus litmuschaos/litmus \
-      --namespace "${LITMUS_NAMESPACE}" \
-      --create-namespace \
-      --wait \
-      --timeout 15m
-    "${REPO_ROOT}/hack/wait-litmus-ready.sh"
-  else
-    echo "==> Litmus namespace ${LITMUS_NAMESPACE} already exists (skipping install)"
-    "${REPO_ROOT}/hack/wait-litmus-ready.sh"
-  fi
+  "${REPO_ROOT}/hack/install-litmus.sh"
 fi
 
 echo "==> Deploying quickstart application"
@@ -73,6 +62,9 @@ if [[ "${K8S_CHAOS_E2E:-0}" == "1" ]]; then
 fi
 
 if [[ "${SKIP_CHAOS}" != "1" ]]; then
+  export APP_NAMESPACE="${APP_NAMESPACE:-hello-world-app}"
+  "${REPO_ROOT}/hack/ensure-chaos-experiment.sh" "${EXPERIMENT}"
+
   echo "==> Pre-flight (CHAOS_ENV=${CHAOS_ENV})"
   k8s-chaos preflight --skip-app
 
