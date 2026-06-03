@@ -46,7 +46,11 @@ def cmd_preflight(args: argparse.Namespace) -> int:
     from k8s_chaos.utils import get_logger
 
     logger = get_logger("cli")
-    if not run_preflight(args.namespace):
+    if not run_preflight(
+        args.namespace,
+        require_litmus=not args.skip_litmus,
+        require_app=not args.skip_app,
+    ):
         return 1
     logger.info("Pre-flight passed")
     return 0
@@ -196,6 +200,16 @@ def build_parser() -> argparse.ArgumentParser:
 
     p = sub.add_parser("preflight", help="Pre-flight before chaos")
     p.add_argument("--namespace", default=None)
+    p.add_argument(
+        "--skip-app",
+        action="store_true",
+        help="Skip quickstart application health check (e.g. after kubectl wait in quickstart)",
+    )
+    p.add_argument(
+        "--skip-litmus",
+        action="store_true",
+        help="Skip Litmus CRD and namespace checks",
+    )
     p.set_defaults(func=cmd_preflight)
 
     p = sub.add_parser("list", help="List experiments, gamedays, or clusters")

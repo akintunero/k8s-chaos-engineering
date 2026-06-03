@@ -21,12 +21,12 @@ done
 echo "==> ChaosEngine CRD is available"
 
 if [[ "${LITMUS_MODE}" == "core" ]]; then
-  echo "==> Waiting for chaos-operator deployment in ${NAMESPACE} (timeout ${POD_TIMEOUT}s)"
-  if ! kubectl wait --for=condition=available deployment \
-    -l "name=chaos-operator" -n "${NAMESPACE}" --timeout="${POD_TIMEOUT}s" 2>/dev/null; then
+  echo "==> Waiting for litmus-core operator in ${NAMESPACE} (timeout ${POD_TIMEOUT}s)"
+  if ! kubectl wait --for=condition=available deployment/litmus \
+    -n "${NAMESPACE}" --timeout="${POD_TIMEOUT}s" 2>/dev/null; then
     if ! kubectl wait --for=condition=available deployment \
-      -l "app.kubernetes.io/component=operator" -n "${NAMESPACE}" --timeout=60s 2>/dev/null; then
-      echo "warning: chaos-operator deployment not ready; pod status:"
+      -l "app=litmus" -n "${NAMESPACE}" --timeout=60s 2>/dev/null; then
+      echo "warning: litmus-core deployment not ready; pod status:"
       kubectl get pods -n "${NAMESPACE}" -o wide || true
       not_ready="$(kubectl get pods -n "${NAMESPACE}" --field-selector=status.phase!=Running,status.phase!=Succeeded --no-headers 2>/dev/null | wc -l | tr -d ' ')"
       if [[ "${not_ready}" != "0" ]]; then

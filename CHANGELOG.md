@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- CLI: add `k8s-chaos preflight --skip-app` and `--skip-litmus` (used by quickstart after app deploy)
 - E2E KinD: pin `litmus-core`/`kubernetes-chaos` to 3.28.1 (latest published); install ChaosExperiment via `helm template` (hub URLs unavailable)
 - CI: lint/security/backend/e2e workflows use `pip install -e .` and `src/k8s_chaos`; KinD quickstart uses `k8s-chaos` CLI
 - Backend CI: add `web/backend/requirements.txt`, install `.[web]`, import `k8s_chaos.utils` in FastAPI app
