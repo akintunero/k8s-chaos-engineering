@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -32,7 +33,30 @@ def get_experiment_meta(catalog: Dict[str, Any], experiment_name: str) -> Dict[s
 
 
 def get_quickstart_settings(catalog: Dict[str, Any]) -> Dict[str, Any]:
-    return catalog.get("quickstart", {})
+    settings = dict(catalog.get("quickstart", {}))
+    if os.getenv("K8S_CHAOS_E2E", "").lower() in ("1", "true", "yes"):
+        min_ready = int(os.getenv("K8S_CHAOS_E2E_MIN_READY", "1"))
+        settings["expected_replicas"] = min(int(settings.get("expected_replicas", 3)), min_ready)
+        settings["recovery_timeout_seconds"] = int(
+            os.getenv(
+                "K8S_CHAOS_RECOVERY_TIMEOUT",
+                settings.get("recovery_timeout_seconds", 120),
+            )
+        )
+    return settings
+
+
+def adjust_probes_for_e2e(probes: List[Dict[str, Any]], expected_replicas: int) -> List[Dict[str, Any]]:
+    if os.getenv("K8S_CHAOS_E2E", "").lower() not in ("1", "true", "yes"):
+        return probes
+    min_ready = int(os.getenv("K8S_CHAOS_E2E_MIN_READY", "1"))
+    adjusted: List[Dict[str, Any]] = []
+    for probe in probes:
+        entry = dict(probe)
+        if entry.get("type") == "deployment_ready":
+            entry["min_ready_replicas"] = min(int(entry.get("min_ready_replicas", expected_replicas)), min_ready)
+        adjusted.append(entry)
+    return adjusted
 
 
 def list_gameday_workflows(workflows_dir_path: Optional[Path] = None) -> List[str]:

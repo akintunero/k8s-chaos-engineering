@@ -48,8 +48,13 @@ jobs:
 
       - name: Run golden-path quickstart
         env:
-          CHAOS_DURATION: "60"
-        run: ./hack/quickstart.sh
+          CHAOS_DURATION: "90"
+          K8S_CHAOS_E2E: "1"
+          K8S_CHAOS_E2E_MIN_READY: "1"
+          K8S_CHAOS_RECOVERY_TIMEOUT: "180"
+        run: |
+          chmod +x hack/wait-litmus-ready.sh
+          ./hack/quickstart.sh
 
       - name: Upload quickstart report
         if: always()

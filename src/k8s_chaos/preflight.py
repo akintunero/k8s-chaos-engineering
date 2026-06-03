@@ -51,7 +51,17 @@ def check_app_healthy(namespace: str, deployment: str) -> bool:
         return False
 
 
+def check_litmus_crd() -> bool:
+    if run_command("kubectl get crd chaosengines.litmuschaos.io", check=False):
+        logger.info("OK ChaosEngine CRD installed")
+        return True
+    logger.error("ChaosEngine CRD missing (Litmus operator not ready)")
+    return False
+
+
 def check_no_running_chaos(namespace: str) -> bool:
+    if not check_litmus_crd():
+        return False
     engines = run_command(
         f"kubectl get chaosengine -n {namespace} --no-headers",
         check=False,
@@ -79,7 +89,7 @@ def run_preflight(
 
     ok = check_cluster()
     if require_litmus:
-        ok = check_litmus(config.litmus_namespace) and ok
+        ok = check_litmus_crd() and check_litmus(config.litmus_namespace) and ok
     if require_app and profile.require_app_healthy:
         ok = check_app_healthy(namespace, deployment) and ok
     if require_no_chaos:

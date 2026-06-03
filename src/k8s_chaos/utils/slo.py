@@ -14,6 +14,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
 
+from .catalog import adjust_probes_for_e2e
 from .config import get_config
 from .k8s import run_command
 from .logging import get_logger
@@ -295,6 +296,7 @@ def evaluate_experiment_slo(
     meta = experiment_meta or {}
     hypothesis = meta.get("hypothesis")
     probes_cfg = extra_probes or default_probes_for_experiment(meta, expected_replicas, recovery_timeout)
+    probes_cfg = adjust_probes_for_e2e(probes_cfg, expected_replicas)
 
     evaluation = SloEvaluation(experiment=experiment_name, hypothesis=hypothesis)
     recovery_elapsed = 0.0

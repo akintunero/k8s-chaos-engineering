@@ -28,7 +28,9 @@ if ! command -v python3 >/dev/null 2>&1; then
   exit 1
 fi
 
-chmod +x "${REPO_ROOT}/hack/ensure-dev-install.sh" "${REPO_ROOT}/hack/sync-package-data.sh"
+chmod +x "${REPO_ROOT}/hack/ensure-dev-install.sh" \
+  "${REPO_ROOT}/hack/sync-package-data.sh" \
+  "${REPO_ROOT}/hack/wait-litmus-ready.sh"
 "${REPO_ROOT}/hack/ensure-dev-install.sh"
 "${REPO_ROOT}/hack/sync-package-data.sh"
 python3 -m pip install -q -e .
@@ -46,8 +48,10 @@ if [[ "${SKIP_LITMUS}" != "1" ]]; then
       --create-namespace \
       --wait \
       --timeout 15m
+    "${REPO_ROOT}/hack/wait-litmus-ready.sh"
   else
     echo "==> Litmus namespace ${LITMUS_NAMESPACE} already exists (skipping install)"
+    "${REPO_ROOT}/hack/wait-litmus-ready.sh"
   fi
 fi
 
@@ -60,9 +64,17 @@ if ! kubectl wait --for=condition=available deployment/flask-app \
   exit 1
 fi
 
+# KinD CI: single-node clusters may not schedule 3 replicas reliably
+if [[ "${K8S_CHAOS_E2E:-0}" == "1" ]]; then
+  echo "==> E2E mode: scaling quickstart app to 1 replica"
+  kubectl scale deployment flask-app -n hello-world-app --replicas=1
+  kubectl wait --for=condition=available deployment/flask-app \
+    -n hello-world-app --timeout=180s
+fi
+
 if [[ "${SKIP_CHAOS}" != "1" ]]; then
   echo "==> Pre-flight (CHAOS_ENV=${CHAOS_ENV})"
-  k8s-chaos preflight
+  k8s-chaos preflight --skip-app
 
   echo "==> Running experiment: ${EXPERIMENT}"
   SKIP_PREFLIGHT=1 k8s-chaos run "${EXPERIMENT}"
