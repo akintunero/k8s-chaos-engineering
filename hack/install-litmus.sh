@@ -4,7 +4,8 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NAMESPACE="${LITMUS_NAMESPACE:-litmus}"
-LITMUS_VERSION="${LITMUS_VERSION:-3.29.0}"
+# Latest litmus-core published on litmuschaos/litmus-helm (ChaosCenter may be newer).
+LITMUS_VERSION="${LITMUS_VERSION:-3.28.1}"
 # core = chaos-operator + ChaosEngine CRDs (golden path). center = ChaosCenter portal only.
 LITMUS_MODE="${LITMUS_MODE:-core}"
 
@@ -19,6 +20,11 @@ if [[ "${LITMUS_MODE}" == "center" ]]; then
     --wait \
     --timeout 15m
 else
+  if ! helm search repo litmuschaos/litmus-core --version "${LITMUS_VERSION}" -l | grep -q 'litmuschaos/litmus-core'; then
+    resolved="$(helm search repo litmuschaos/litmus-core -l -o json | python3 -c 'import json,sys; print(json.load(sys.stdin)[0]["version"])')"
+    echo "warning: litmus-core ${LITMUS_VERSION} not in index; using ${resolved}" >&2
+    LITMUS_VERSION="${resolved}"
+  fi
   echo "==> Installing Litmus chaos operator (litmus-core ${LITMUS_VERSION}) in namespace ${NAMESPACE}"
   helm upgrade --install litmus litmuschaos/litmus-core \
     --namespace "${NAMESPACE}" \
@@ -28,4 +34,5 @@ else
     --timeout 10m
 fi
 
+export LITMUS_VERSION
 "${REPO_ROOT}/hack/wait-litmus-ready.sh"
