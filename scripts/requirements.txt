@@ -1,4 +1,4 @@
 # Production dependencies
 pyyaml>=6.0,<7.0
-kubernetes>=28.1.0,<29.0.0
+kubernetes>=36.0.2,<37.0.0
 pydantic>=2.0.0,<3.0.0
